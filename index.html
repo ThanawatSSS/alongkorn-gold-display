@@ -219,64 +219,52 @@
             return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         }
 
-        // ฟังก์ชันดึงราคาทอง (ใช้ Proxy เพื่อเลี่ยง CORS/SSL ในทีวีรุ่นเก่า)
+        // ฟังก์ชันดึงราคาทอง (ใช้ JSONP เพื่อข้าม CORS/SSL ในทีวีรุ่นเก่า)
+        var fetchTimeout = null;
         function fetchGoldPrice() {
             var targetUrl = 'https://api.chnwt.dev/thai-gold-api/latest';
-            // ใช้ AllOrigins Proxy
-            var proxyUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent(targetUrl);
+            // ใช้ AllOrigins Proxy ในโหมด JSONP (&callback=...)
+            var proxyUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent(targetUrl) + '&callback=handleGoldResponse';
             
-            document.getElementById('proxy-info').innerText = 'กำลังดึงข้อมูลผ่าน Proxy...';
+            document.getElementById('proxy-info').innerText = 'กำลังพยายามดึงข้อมูล (JSONP Mode)...';
             
-            _request(proxyUrl, function(err, data) {
-                if (err) {
-                    // ถ้า Proxy พัง ลองดึงตรง (Direct)
-                    console.log('Proxy failed, trying direct...');
-                    document.getElementById('proxy-info').innerText = 'Proxy ล้มเหลว กำลังลองดึงตรง...';
-                    _request(targetUrl, function(err2, data2) {
-                        if (err2) {
-                            document.getElementById('update-info').innerText = 'ไม่สามารถดึงข้อมูลได้ (Status: ' + err2 + ')';
-                            document.getElementById('proxy-info').innerText = '';
-                        } else {
-                            renderGoldData(data2);
-                            document.getElementById('proxy-info').innerText = 'ดึงข้อมูลสำเร็จ (Direct)';
-                        }
-                    });
-                } else {
-                    // จัดการข้อมูลจาก Proxy (ข้อมูลจริงอยู่ใน contents)
-                    try {
-                        var realData = JSON.parse(data.contents);
-                        renderGoldData(realData);
-                        document.getElementById('proxy-info').innerText = 'ดึงข้อมูลสำเร็จ (Proxy Mode)';
-                    } catch (e) {
-                        document.getElementById('update-info').innerText = 'ข้อมูลจาก Proxy ผิดพลาด';
-                    }
+            // ล้าง Script เก่า (ถ้ามี)
+            var oldScript = document.getElementById('jsonp-script');
+            if (oldScript) oldScript.parentNode.removeChild(oldScript);
+            
+            // สร้าง Script ใหม่เพื่อดึงข้อมูล
+            var script = document.createElement('script');
+            script.id = 'jsonp-script';
+            script.src = proxyUrl;
+            
+            // ตั้งเวลา Timeout เผื่อโหลดไม่สำเร็จ
+            if (fetchTimeout) clearTimeout(fetchTimeout);
+            fetchTimeout = setTimeout(function() {
+                if (document.getElementById('asso-buy').innerText === '---') {
+                    document.getElementById('update-info').innerText = 'การดึงข้อมูลใช้เวลานานเกินไป (Timeout)';
+                    document.getElementById('proxy-info').innerText = 'โปรดลองกดปุ่มรีเฟรชด้านล่าง';
                 }
-            });
+            }, 15000); // รอ 15 วินาที
+            
+            document.body.appendChild(script);
         }
 
-        // Helper สำหรับ XHR
-        function _request(url, callback) {
-            var xhr = new XMLHttpRequest();
-            xhr.open('GET', url, true);
-            xhr.onreadystatechange = function() {
-                if (xhr.readyState === 4) {
-                    if (xhr.status === 200) {
-                        try {
-                            var data = JSON.parse(xhr.responseText);
-                            callback(null, data);
-                        } catch (e) {
-                            callback('ParseError', null);
-                        }
-                    } else {
-                        callback(xhr.status || 'NetworkError', null);
-                    }
+        // Callback สำหรับ JSONP (ต้องเป็น Global)
+        window.handleGoldResponse = function(data) {
+            if (fetchTimeout) clearTimeout(fetchTimeout);
+            
+            if (data && data.contents) {
+                try {
+                    var realData = JSON.parse(data.contents);
+                    renderGoldData(realData);
+                    document.getElementById('proxy-info').innerText = 'ดึงข้อมูลสำเร็จ (JSONP Stable)';
+                } catch (e) {
+                    document.getElementById('update-info').innerText = 'ข้อมูลผิดพลาด: ' + e.message;
                 }
-            };
-            xhr.onerror = function() {
-                callback('NetworkError', null);
-            };
-            xhr.send();
-        }
+            } else {
+                document.getElementById('update-info').innerText = 'ไม่ได้รับข้อมูลจากแหล่งจ่าย';
+            }
+        };
 
         // ฟังก์ชันแสดงผลข้อมูล
         function renderGoldData(data) {
@@ -367,10 +355,10 @@
             calculateTimeAgo(); // อัปเดต "กี่นาทีที่แล้ว" ทุก 10 วินาที
         }, 10000);
 
-        // รอ 2 วินาทีก่อนดึงครั้งแรก เพื่อให้ทีวีเตรียมความพร้อมเครือข่าย
+        // รอ 5 วินาทีก่อนดึงครั้งแรก เพื่อให้ทีวีเตรียมความพร้อมเครือข่าย
         setTimeout(function() {
             fetchGoldPrice();
-        }, 2000);
+        }, 5000);
 
         setInterval(fetchGoldPrice, 60000); // อัปเดตราคาทุก 60 วินาที
     </script>
