@@ -15,10 +15,18 @@ jobs:
       
       - name: Fetch Price & Update Sync
         run: |
-          # ดึงราคาทองล่าสุด
-          curl -s https://api.chnwt.dev/thai-gold-api/latest > latest_gold.json
-          # บันทึกเวลาที่เช็คล่าสุด (ISO Format) เพื่อให้ระบบมีการ Push ทุก 5 นาที
-          echo "{\"last_sync\": \"$(date -u +'%Y-%m-%dT%H:%M:%SZ')\"}" > last_sync.json
+          # ดึงราคาทองล่าสุด พร้อมใส่ Cache Buster
+          curl -s "https://api.chnwt.dev/thai-gold-api/latest?t=$(date +%s)" > latest_gold_new.json
+          
+          # ตรวจสอบว่าไฟล์ไม่ว่างและเป็น JSON ที่ถูกต้อง (มีคำว่า success)
+          if grep -q "success" latest_gold_new.json; then
+            mv latest_gold_new.json latest_gold.json
+            # บันทึกเวลาที่เช็คล่าสุด (ISO Format) เพื่อให้ระบบมีการ Push ทุก 5 นาที
+            echo "{\"last_sync\": \"$(date -u +'%Y-%m-%dT%H:%M:%SZ')\"}" > last_sync.json
+          else
+            echo "Error: Invalid API response"
+            exit 1
+          fi
           
       - name: Commit and Push
         run: |

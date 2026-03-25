@@ -258,15 +258,21 @@
             };
             xhr.send();
 
-            // ดึงสถานะเชื่อมต่อ
+            // ดึงสถานะเชื่อมต่อ (Sync Status)
             var syncXhr = new XMLHttpRequest();
             syncXhr.open('GET', './last_sync.json?v=' + new Date().getTime(), true);
             syncXhr.onreadystatechange = function() {
                 if (syncXhr.readyState === 4 && syncXhr.status === 200) {
                     try {
                         var s = JSON.parse(syncXhr.responseText);
-                        document.getElementById('sync-status').innerText = '🟢 ล่าสุดเช็คจากเซิร์ฟเวอร์เมื่อ: ' + s.last_sync.replace('T', ' ').replace('Z', '');
-                    } catch (e) {}
+                        var lastSyncDate = new Date(s.last_sync);
+                        var timeStr = lastSyncDate.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+                        document.getElementById('sync-status').innerHTML = '🟢 เชื่อมต่อล่าสุด: ' + timeStr + ' น.';
+                    } catch (e) {
+                        document.getElementById('sync-status').innerText = '🟡 กำลังรอข้อมูลใหม่...';
+                    }
+                } else if (syncXhr.readyState === 4 && syncXhr.status !== 200) {
+                    document.getElementById('sync-status').innerText = '🔴 ไม่สามารถดึงสถานะล่าสุดได้';
                 }
             };
             syncXhr.send();
