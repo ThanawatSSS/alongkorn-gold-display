@@ -250,71 +250,60 @@
             return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         }
 
-        // ฟังก์ชันดึงราคาทอง (ใช้ JSONP เพื่อข้าม CORS/SSL ในทีวีรุ่นเก่า)
+        // ฟังก์ชันดึงราคาทอง (ดึงจากไฟล์ตัวเองที่ GitHub Action สร้างให้)
         var fetchTimeout = null;
         var attemptCount = 0;
 
         function fetchGoldPrice() {
             attemptCount++;
-            log('เริ่มดึงข้อมูลครั้งที่ ' + attemptCount);
+            log('เริ่มดึงข้อมูล (จากไฟล์ระบบ) ครั้งที่ ' + attemptCount);
             
-            var isHttps = (location.protocol === 'https:');
-            log('Protocol ปัจจุบัน: ' + location.protocol);
+            // ดึงไฟล์จากชื่อไฟล์โดยตรง (Path แบบสัมพัทธ์)
+            // การดึงไฟล์จากโดเมนเดียวกัน จะไม่มีปัญหาเรื่องความปลอดภัยในทีวีครับ
+            var url = './latest_gold.json?t=' + new Date().getTime();
             
-            var targetUrl = 'https://api.chnwt.dev/thai-gold-api/latest';
-            // หากเว็บโหลดผ่าน HTTP ให้ใช้ HTTP Proxy เพื่อลดปัญหา SSL
-            var proxyBase = isHttps ? 'https://api.allorigins.win/get?url=' : 'http://api.allorigins.win/get?url=';
+            log('Target File: ' + url);
+            document.getElementById('proxy-info').innerText = 'กำลังโหลดข้อมูลจากไฟล์ระบบ (Attempt ' + attemptCount + ')...';
             
-            var proxyUrl = proxyBase + encodeURIComponent(targetUrl) + '&callback=handleGoldResponse&t=' + new Date().getTime();
-            
-            log('Target: ' + targetUrl);
-            log('Using Proxy: ' + (isHttps ? 'HTTPS' : 'HTTP'));
-
-            document.getElementById('proxy-info').innerText = 'กำลังดึงข้อมูล (Attempt ' + attemptCount + ')...';
-            
-            // ล้าง Script เก่า
-            var oldScript = document.getElementById('jsonp-script');
-            if (oldScript) oldScript.parentNode.removeChild(oldScript);
-            
-            // สร้าง Script ใหม่
-            var script = document.createElement('script');
-            script.id = 'jsonp-script';
-            script.src = proxyUrl;
-            
-            // ตั้งเวลา Timeout 30 วินาที
-            if (fetchTimeout) clearTimeout(fetchTimeout);
-            fetchTimeout = setTimeout(function() {
-                if (document.getElementById('asso-buy').innerText === '---') {
-                    log('!!! Timeout: ดึงข้อมูลไม่สำเร็จใน 30 วินาที');
-                    document.getElementById('update-info').innerText = 'ดึงข้อมูลไม่สำเร็จ (Timeout)';
+            _request(url, function(err, data) {
+                if (err) {
+                    log('Error: ดึงไฟล์ไม่ได้ (รหัส ' + err + ')');
+                    if (err == 404) {
+                        document.getElementById('update-info').innerText = 'ระบบกำลังสร้างไฟล์ราคาครั้งแรก (โปรดรอสักครู่)...';
+                    } else {
+                        document.getElementById('update-info').innerText = 'ไม่สามารถดึงข้อมูลได้ (Error: ' + err + ')';
+                    }
+                } else {
+                    log('ได้รับข้อมูลสำเร็จ!');
+                    renderGoldData(data);
+                    document.getElementById('proxy-info').innerText = 'ดึงข้อมูลสำเร็จ (จากระบบหลัก)';
                 }
-            }, 30000); 
-            
-            log('Injected script tag...');
-            document.body.appendChild(script);
+            });
         }
 
-        // Callback สำหรับ JSONP
-        window.handleGoldResponse = function(data) {
-            log('ได้รับ Callback จาก Proxy แล้ว!');
-            if (fetchTimeout) clearTimeout(fetchTimeout);
-            
-            if (data && data.contents) {
-                try {
-                    log('กำลัง Parse JSON ข้อมูลราคาทอง...');
-                    var realData = JSON.parse(data.contents);
-                    renderGoldData(realData);
-                    log('แสดงผลราคาทองสำเร็จ');
-                    document.getElementById('proxy-info').innerText = 'ดึงข้อมูลสำเร็จ';
-                } catch (e) {
-                    log('Parse Error: ' + e.message);
-                    document.getElementById('update-info').innerText = 'ข้อมูลผิดพลาด: ' + e.message;
+        // Helper สำหรับ XHR (ใช้ดึงไฟล์ตัวเอง)
+        function _request(url, callback) {
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', url, true);
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        try {
+                            var data = JSON.parse(xhr.responseText);
+                            callback(null, data);
+                        } catch (e) {
+                            callback('ParseError', null);
+                        }
+                    } else {
+                        callback(xhr.status || 'NetworkError', null);
+                    }
                 }
-            } else {
-                log('Error: ข้อมูล contents ว่างเปล่า');
-                document.getElementById('update-info').innerText = 'ไม่ได้รับข้อมูล';
-            }
-        };
+            };
+            xhr.onerror = function() {
+                callback('NetworkError', null);
+            };
+            xhr.send();
+        }
 
         // ฟังก์ชันแสดงผลข้อมูล
         function renderGoldData(data) {

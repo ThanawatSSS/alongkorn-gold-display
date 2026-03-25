@@ -1,0 +1,26 @@
+name: Update Gold Price
+on:
+  schedule:
+    - cron: '*/7 * * * *' # อัปเดตราคาทุก 10 นาที (ปรับได้)
+  workflow_dispatch: # ให้เรากดรันเองได้ด้วย
+
+jobs:
+  update-price:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      
+      - name: Fetch Price
+        run: |
+          curl -s https://api.chnwt.dev/thai-gold-api/latest > latest_gold.json
+          
+      - name: Commit and Push
+        run: |
+          git config --global user.name "GitHub Action"
+          git config --global user.email "action@github.com"
+          git add latest_gold.json
+          git commit -m "Update gold price" || exit 0
+          git push
