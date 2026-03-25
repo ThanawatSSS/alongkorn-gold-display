@@ -179,6 +179,7 @@
         <div id="update-info" class="status">
             กำลังเตรียมการดึงข้อมูล...
         </div>
+        <div id="proxy-info" style="font-size: 14px; color: #888; margin-top: 5px;"></div>
         <div id="diff-info" class="diff-text"></div>
         <div id="time-ago-info" class="time-ago"></div>
         
@@ -218,24 +219,37 @@
             return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         }
 
-        // ฟังก์ชันดึงราคาทอง (รองรับ Fallback)
+        // ฟังก์ชันดึงราคาทอง (ใช้ Proxy เพื่อเลี่ยง CORS/SSL ในทีวีรุ่นเก่า)
         function fetchGoldPrice() {
-            var urlPrimary = 'https://api.chnwt.dev/thai-gold-api/latest';
-            var urlSecondary = 'https://thai-gold-api.vercel.app/latest';
+            var targetUrl = 'https://api.chnwt.dev/thai-gold-api/latest';
+            // ใช้ AllOrigins Proxy
+            var proxyUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent(targetUrl);
             
-            _request(urlPrimary, function(err, data) {
+            document.getElementById('proxy-info').innerText = 'กำลังดึงข้อมูลผ่าน Proxy...';
+            
+            _request(proxyUrl, function(err, data) {
                 if (err) {
-                    // ถ้าพัง ลองแหล่งสำรอง
-                    console.log('Primary API failed, trying secondary...');
-                    _request(urlSecondary, function(err2, data2) {
+                    // ถ้า Proxy พัง ลองดึงตรง (Direct)
+                    console.log('Proxy failed, trying direct...');
+                    document.getElementById('proxy-info').innerText = 'Proxy ล้มเหลว กำลังลองดึงตรง...';
+                    _request(targetUrl, function(err2, data2) {
                         if (err2) {
-                            document.getElementById('update-info').innerText = 'ไม่สามารถดึงข้อมูลได้ (Status1: ' + err + ', Status2: ' + err2 + ')';
+                            document.getElementById('update-info').innerText = 'ไม่สามารถดึงข้อมูลได้ (Status: ' + err2 + ')';
+                            document.getElementById('proxy-info').innerText = '';
                         } else {
                             renderGoldData(data2);
+                            document.getElementById('proxy-info').innerText = 'ดึงข้อมูลสำเร็จ (Direct)';
                         }
                     });
                 } else {
-                    renderGoldData(data);
+                    // จัดการข้อมูลจาก Proxy (ข้อมูลจริงอยู่ใน contents)
+                    try {
+                        var realData = JSON.parse(data.contents);
+                        renderGoldData(realData);
+                        document.getElementById('proxy-info').innerText = 'ดึงข้อมูลสำเร็จ (Proxy Mode)';
+                    } catch (e) {
+                        document.getElementById('update-info').innerText = 'ข้อมูลจาก Proxy ผิดพลาด';
+                    }
                 }
             });
         }
@@ -259,7 +273,7 @@
                 }
             };
             xhr.onerror = function() {
-                callback('Error', null);
+                callback('NetworkError', null);
             };
             xhr.send();
         }
