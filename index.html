@@ -127,6 +127,21 @@
             color: #aaa;
             margin-top: 5px;
         }
+
+        .refresh-btn {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: transparent;
+            border: 1px solid #ffd700;
+            color: #ffd700;
+            font-size: 18px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .refresh-btn:hover {
+            background-color: rgba(255, 215, 0, 0.1);
+        }
     </style>
 </head>
 <body>
@@ -162,10 +177,12 @@
         </div>
 
         <div id="update-info" class="status">
-            กำลังตรวจสอบข้อมูลจากสมาคมค้าทองคำ...
+            กำลังเตรียมการดึงข้อมูล...
         </div>
         <div id="diff-info" class="diff-text"></div>
         <div id="time-ago-info" class="time-ago"></div>
+        
+        <button class="refresh-btn" onclick="location.reload();">รีเฟรชหน้าจอ</button>
     </div>
 
     <script type="text/javascript">
@@ -201,66 +218,88 @@
             return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         }
 
-        // ฟังก์ชันดึงราคาทอง
+        // ฟังก์ชันดึงราคาทอง (รองรับ Fallback)
         function fetchGoldPrice() {
-            var xhr = new XMLHttpRequest();
-            // ใช้ API ที่ผู้ใช้ระบุ (เติม timestamp เพื่อเลี่ยง Cache)
-            var apiUrl = 'https://api.chnwt.dev/thai-gold-api/latest?t=' + (new Date().getTime());
-            xhr.open('GET', apiUrl, true);
+            var urlPrimary = 'https://api.chnwt.dev/thai-gold-api/latest';
+            var urlSecondary = 'https://thai-gold-api.vercel.app/latest';
             
+            _request(urlPrimary, function(err, data) {
+                if (err) {
+                    // ถ้าพัง ลองแหล่งสำรอง
+                    console.log('Primary API failed, trying secondary...');
+                    _request(urlSecondary, function(err2, data2) {
+                        if (err2) {
+                            document.getElementById('update-info').innerText = 'ไม่สามารถดึงข้อมูลได้ (Status1: ' + err + ', Status2: ' + err2 + ')';
+                        } else {
+                            renderGoldData(data2);
+                        }
+                    });
+                } else {
+                    renderGoldData(data);
+                }
+            });
+        }
+
+        // Helper สำหรับ XHR
+        function _request(url, callback) {
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', url, true);
             xhr.onreadystatechange = function() {
                 if (xhr.readyState === 4) {
                     if (xhr.status === 200) {
                         try {
                             var data = JSON.parse(xhr.responseText);
-                            if (data.status === 'success') {
-                                var response = data.response;
-                                var prices = response.price.gold_bar;
-                                
-                                // ราคาสมาคม (ดึงเป็นตัวเลขเพื่อคำนวณ)
-                                var assoBuy = parseFloat(prices.buy.replace(/,/g, ''));
-                                var assoSell = parseFloat(prices.sell.replace(/,/g, ''));
-                                
-                                // ราคาขายหน้าร้าน (+1450)
-                                var shopSell = assoSell + 1450;
-                                
-                                // แสดงผลราคา
-                                document.getElementById('asso-buy').innerText = formatNumber(assoBuy);
-                                document.getElementById('asso-sell').innerText = formatNumber(assoSell);
-                                document.getElementById('shop-sell').innerText = formatNumber(shopSell);
-                                
-                                // แสดงการเปลี่ยนแปลง (ขึ้น/ลง)
-                                var diff = response.update_diff || "0";
-                                var diffEl = document.getElementById('diff-info');
-                                if (diff.indexOf('+') !== -1) {
-                                    diffEl.innerHTML = '<span class="price-up">▲ ขึ้น ' + diff + ' บาท</span>';
-                                } else if (diff.indexOf('-') !== -1) {
-                                    diffEl.innerHTML = '<span class="price-down">▼ ลง ' + diff + ' บาท</span>';
-                                } else {
-                                    diffEl.innerHTML = '<span style="color: #fff;">- ราคาคงที่ -</span>';
-                                }
-
-                                // ข้อมูลอัปเดต
-                                document.getElementById('update-info').innerHTML = 
-                                    'ข้อมูลสมาคม: <span class="highlight">' + response.update_time + '</span>';
-                                
-                                // คำนวณเวลาที่ผ่านไป
-                                calculateTimeAgo(response.update_time);
-                            }
+                            callback(null, data);
                         } catch (e) {
-                            document.getElementById('update-info').innerText = 'ข้อมูลผิดพลาด: ' + e.message;
+                            callback('ParseError', null);
                         }
                     } else {
-                        document.getElementById('update-info').innerText = 'ไม่สามารถดึงข้อมูลได้ (Status: ' + xhr.status + ')';
+                        callback(xhr.status || 'NetworkError', null);
                     }
                 }
             };
-            
             xhr.onerror = function() {
-                document.getElementById('update-info').innerText = 'การเชื่อมต่อผิดพลาด (ReadyState: ' + xhr.readyState + ')';
+                callback('Error', null);
             };
-            
             xhr.send();
+        }
+
+        // ฟังก์ชันแสดงผลข้อมูล
+        function renderGoldData(data) {
+            if (data.status === 'success') {
+                var response = data.response;
+                var prices = response.price.gold_bar;
+                
+                // ราคาสมาคม (ดึงเป็นตัวเลขเพื่อคำนวณ)
+                var assoBuy = parseFloat(prices.buy.replace(/,/g, ''));
+                var assoSell = parseFloat(prices.sell.replace(/,/g, ''));
+                
+                // ราคาขายหน้าร้าน (+1450)
+                var shopSell = assoSell + 1450;
+                
+                // แสดงผลราคา
+                document.getElementById('asso-buy').innerText = formatNumber(assoBuy);
+                document.getElementById('asso-sell').innerText = formatNumber(assoSell);
+                document.getElementById('shop-sell').innerText = formatNumber(shopSell);
+                
+                // แสดงการเปลี่ยนแปลง (ขึ้น/ลง)
+                var diff = response.update_diff || "0";
+                var diffEl = document.getElementById('diff-info');
+                if (diff.indexOf('+') !== -1) {
+                    diffEl.innerHTML = '<span class="price-up">▲ ขึ้น ' + diff + ' บาท</span>';
+                } else if (diff.indexOf('-') !== -1) {
+                    diffEl.innerHTML = '<span class="price-down">▼ ลง ' + diff + ' บาท</span>';
+                } else {
+                    diffEl.innerHTML = '<span style="color: #fff;">- ราคาคงที่ -</span>';
+                }
+
+                // ข้อมูลอัปเดต
+                document.getElementById('update-info').innerHTML = 
+                    'ข้อมูลสมาคม: <span class="highlight">' + response.update_time + '</span>';
+                
+                // คำนวณเวลาที่ผ่านไป
+                calculateTimeAgo(response.update_time);
+            }
         }
 
         // ฟังก์ชันคำนวณเวลาที่อัปเดตไปแล้ว
