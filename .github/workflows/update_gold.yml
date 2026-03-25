@@ -1,7 +1,7 @@
 name: Update Gold Price
 on:
   schedule:
-    - cron: '*/7 * * * *' # อัปเดตราคาทุก 10 นาที (ปรับได้)
+    - cron: '*/5 * * * *' # อัปเดตราคาทุก 10 นาที (ปรับได้)
   workflow_dispatch: # ให้เรากดรันเองได้ด้วย
 
 jobs:
@@ -11,7 +11,7 @@ jobs:
       contents: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       
       - name: Fetch Price
         run: |

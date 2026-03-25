@@ -5,217 +5,223 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ร้านทองอลงกรณ์ - ราคาทองวันนี้</title>
     <style>
-        /* CSS พื้นฐานเพื่อความเข้ากันได้สูงกับ TV รุ่นเก่า */
-        body {
+        * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            background-color: #2c0404; /* พื้นหลังสีแดงเข้ม/มารูน */
-            color: #ffffff;
-            font-family: "Tahoma", "Arial", sans-serif; /* ฟอนต์มาตรฐานที่มักมีใน TV */
-            text-align: center;
-            overflow-y: auto; /* เปิดให้ scroll ได้หากพื้นที่ไม่พอ */
-            display: block; 
+        }
+
+        body {
+            background-color: #000;
+            color: #ffd700;
+            font-family: 'Tahoma', 'Arial', sans-serif;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden; /* ป้องกัน Scroll ในทีวี */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-image: linear-gradient(135deg, #1a1a1a 0%, #000 100%);
         }
 
         .container {
-            width: 100%;
-            min-height: 100%; /* ใช้ min-height แทน vh เพื่อความชัวร์ */
-            padding: 20px;
-            box-sizing: border-box;
-            border: 10px solid #ffd700; /* กรอบสีทอง */
-            background-color: #2c0404; /* Fallback สำหรับรุ่นเก่ามากๆ */
-            background: -webkit-radial-gradient(circle, #4a0404 0%, #2c0404 100%);
-            background: radial-gradient(circle, #4a0404 0%, #2c0404 100%);
+            width: 90vw; /* Safety Margin 5% รอบทิศ */
+            height: 90vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            text-align: center;
+            padding: 2vh 0;
         }
 
+        /* ส่วนหัว: โลโก้และหัวข้อ */
         .header {
-            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            padding: 0 2vw;
+        }
+
+        .logo-group {
+            display: flex;
+            align-items: center;
+            text-align: left;
         }
 
         .logo {
-            height: 80px; /* ลดขนาดลงจาก 120px */
-            margin-bottom: 5px;
+            height: 10vh;
+            margin-right: 2vw;
         }
 
         .shop-name {
-            font-size: 36px; /* ลดขนาดลงจาก 48px */
+            font-size: 3vw;
             color: #ffd700;
             font-weight: bold;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-            margin: 0;
         }
 
-        .datetime-container {
-            font-size: 22px;
-            color: #f1c40f;
-            margin-bottom: 15px; /* ลดลงจาก 30px */
+        #clock {
+            font-size: 2.5vw;
+            color: #fff;
+            text-align: right;
         }
 
-        .price-grid {
-            width: 90%;
-            margin: 0 auto;
-            border-collapse: collapse;
+        /* ส่วนราคาหลัก (Hero) */
+        .hero-section {
+            background: linear-gradient(180deg, #ffd700 0%, #b8860b 100%);
+            width: 100%;
+            padding: 4vh;
+            border-radius: 30px;
+            box-shadow: 0 15px 40px rgba(0,0,0,1);
+            border: 4px solid #fff;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
 
-        .price-card {
-            background-color: rgba(255, 255, 255, 0.1);
-            border: 2px solid #ffd700;
-            border-radius: 15px;
-            margin: 10px;
-            padding: 20px;
-            display: inline-block;
-            vertical-align: top;
-            width: 30%;
-        }
-
-        .main-price-card {
-            width: 65%;
-            background-color: #ffd700; /* Fallback */
-            background: -webkit-linear-gradient(135deg, #ffd700 0%, #b8860b 100%);
-            background: linear-gradient(135deg, #ffd700 0%, #b8860b 100%);
-            color: #2c0404;
-            display: block;
-            margin: 0 auto 15px auto; /* ลดลงจาก 30px */
-        }
-
-        .label {
-            font-size: 28px;
-            margin-bottom: 10px;
-        }
-
-        .price {
-            font-size: 80px;
+        .shop-label {
+            font-size: 3.5vw;
+            color: #000;
             font-weight: bold;
-            margin: 5px 0;
+            margin-bottom: 1vh;
         }
 
-        .main-price {
-            font-size: 100px;
+        .price-main {
+            font-size: 16vw; /* ตัวเลขราคาใหญ่มาก */
+            color: #000;
+            font-weight: 900;
+            line-height: 0.9;
         }
 
         .unit {
-            font-size: 32px;
+            font-size: 4vw;
+            color: #333;
+            margin-left: 1vw;
+            font-weight: bold;
         }
 
-        .status {
-            margin-top: 30px;
-            font-size: 18px;
-            color: #ccc;
+        /* ส่วนรายละเอียดย่อย (ราคาสมาคม) */
+        .details-grid {
+            display: flex;
+            width: 100%;
+            gap: 3vw;
+            justify-content: center;
         }
 
-        .highlight {
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            flex: 1;
+            padding: 3vh;
+            border-radius: 20px;
+            border: 2px solid #ffd700;
+            box-shadow: 0 5px 15px rgba(255, 215, 0, 0.1);
+        }
+
+        .card-label {
+            font-size: 2.2vw;
+            color: #fff;
+            margin-bottom: 1vh;
+        }
+
+        .card-price {
+            font-size: 6vw;
             color: #ffd700;
             font-weight: bold;
         }
 
-        .price-up {
-            color: #2ecc71 !important; /* เขียว */
+        /* ข้อมูลสถานะและเวลาอัปเดต */
+        .footer {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #888;
+            font-size: 1.8vw;
+            padding: 0 2vw;
         }
 
-        .price-down {
-            color: #ff4757 !important; /* แดง */
+        .status-group {
+            text-align: left;
         }
 
-        .diff-text {
-            font-size: 32px;
-            font-weight: bold;
-            margin-top: 10px;
-        }
-
-        .time-ago {
-            font-size: 20px;
-            color: #aaa;
-            margin-top: 5px;
-        }
+        .price-up { color: #00ff00; }
+        .price-down { color: #ff3b3b; }
+        .highlight { color: #fff; font-weight: bold; }
 
         .refresh-btn {
-            margin-top: 20px;
-            padding: 10px 20px;
-            background-color: transparent;
-            border: 1px solid #ffd700;
-            color: #ffd700;
-            font-size: 18px;
-            border-radius: 5px;
+            padding: 1vh 2vw;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid #444;
+            color: #444;
+            border-radius: 10px;
             cursor: pointer;
+            font-size: 1.2vw;
         }
 
-        .refresh-btn:hover {
-            background-color: rgba(255, 215, 0, 0.1);
-        }
-
-        #debug-log {
-            margin-top: 30px;
-            padding: 10px;
-            background-color: #000;
-            color: #0f0; /* สีเขียวแบบ Terminal */
-            font-family: monospace;
-            font-size: 14px;
-            text-align: left;
-            border: 1px solid #333;
-            max-height: 150px;
-            overflow-y: auto;
-            width: 90%;
-            margin: 20px auto;
-            display: block;
+        /* ซ่อน Debug Log สำหรับการใช้งานจริง */
+        #debug-log, #proxy-info {
+            display: none;
         }
     </style>
 </head>
 <body>
     <div class="container">
+        <!-- Header -->
         <div class="header">
-            <!-- ใส่โลโก้จาก Downloads -->
-            <img src="logo_no_bg.png" alt="Logo" class="logo" id="logo">
-            <h1 class="shop-name">ร้านทองอลงกรณ์</h1>
-            <div id="clock" class="datetime-container">กำลังโหลดเวลา...</div>
-        </div>
-
-        <!-- ราคาขายหน้าร้าน (คำนวณจากสมาคม + 1450) -->
-        <div class="price-card main-price-card">
-            <div class="label">ราคาขายออกหน้าร้าน (ประมาณ)</div>
-            <div id="shop-sell" class="price main-price">---</div>
-            <div class="unit">บาท / บาททองคำ</div>
-        </div>
-
-        <div class="price-grid">
-            <!-- ราคาสมาคม รับซื้อ -->
-            <div class="price-card">
-                <div class="label">สมาคม รับซื้อ</div>
-                <div id="asso-buy" class="price" style="color: #ffcccc;">---</div>
-                <div class="unit">บาท</div>
+            <div class="logo-group">
+                <img src="logo_no_bg.png" alt="Logo" class="logo">
+                <div class="shop-name">ร้านทองอลงกรณ์</div>
             </div>
+            <div id="clock">กำลังโหลดเวลา...</div>
+        </div>
 
-            <!-- ราคาสมาคม ขายออก -->
-            <div class="price-card">
-                <div class="label">สมาคม ขายออก</div>
-                <div id="asso-sell" class="price" style="color: #ffd700;">---</div>
-                <div class="unit">บาท</div>
+        <!-- Hero: Shop Price -->
+        <div class="hero-section">
+            <div class="shop-label">ราคาขายออกหน้าร้าน</div>
+            <div class="price-display">
+                <span id="shop-sell" class="price-main">---</span>
+                <span class="unit">บาท</span>
+            </div>
+            <div id="diff-info" style="font-size: 3vw; margin-top: 1vh; font-weight: bold;"></div>
+        </div>
+
+        <!-- Details: Association Prices -->
+        <div class="details-grid">
+            <div class="card">
+                <div class="card-label">สมาคมฯ รับซื้อ</div>
+                <div id="asso-buy" class="card-price">---</div>
+            </div>
+            <div class="card">
+                <div class="card-label">สมาคมฯ ขายออก</div>
+                <div id="asso-sell" class="card-price">---</div>
             </div>
         </div>
 
-        <div id="update-info" class="status">
-            กำลังเตรียมการดึงข้อมูล...
+        <!-- Footer -->
+        <div class="footer">
+            <div class="status-group">
+                <div id="update-info">กำลังเตรียมการดึงข้อมูล...</div>
+                <div id="time-ago-info"></div>
+            </div>
+            <button class="refresh-btn" onclick="location.reload();">รีเฟรชหน้าจอ</button>
         </div>
-        <div id="proxy-info" style="font-size: 14px; color: #888; margin-top: 5px;"></div>
-        <div id="diff-info" class="diff-text"></div>
-        <div id="time-ago-info" class="time-ago"></div>
-        
-        <button class="refresh-btn" onclick="location.reload();">รีเฟรชหน้าจอ</button>
-        
-        <div id="debug-log">
-            [System] เริ่มการทำงานระบบ...<br>
-        </div>
+
+        <!-- Hidden Elements for Logic -->
+        <div id="proxy-info"></div>
+        <div id="debug-log"></div>
     </div>
 
     <script type="text/javascript">
-        // ฟังก์ชันช่วยบันทึก Log ลงหน้าจอ
+        // ฟังก์ชันช่วยบันทึก Log (สำหรับ Debug เบื้องหลัง)
         function log(msg) {
             var logEl = document.getElementById('debug-log');
             if (logEl) {
                 var now = new Date();
                 var time = now.getHours() + ':' + now.getMinutes() + ':' + now.getSeconds();
                 logEl.innerHTML += '[' + time + '] ' + msg + '<br>';
-                logEl.scrollTop = logEl.scrollHeight;
             }
+            console.log(msg);
         }
 
         // ฟังก์ชันอัปเดตนาฬิกา
@@ -227,62 +233,29 @@
             var dayName = days[now.getDay()];
             var date = now.getDate();
             var monthName = months[now.getMonth()];
-            var year = now.getFullYear() + 543; // พ.ศ.
+            var year = now.getFullYear() + 543;
             
-            var hours = now.getHours();
-            var minutes = now.getMinutes();
-            var seconds = now.getSeconds();
+            var h = now.getHours();
+            var m = now.getMinutes();
+            var s = now.getSeconds();
+            h = h < 10 ? '0' + h : h;
+            m = m < 10 ? '0' + m : m;
+            s = s < 10 ? '0' + s : s;
             
-            // เติมเลข 0 ข้างหน้าถ้าหลักเดียว
-            if (hours < 10) hours = '0' + hours;
-            if (minutes < 10) minutes = '0' + minutes;
-            if (seconds < 10) seconds = '0' + seconds;
-            
-            var timeString = hours + ':' + minutes + ':' + seconds + ' น.';
-            var dateString = 'วัน' + dayName + 'ที่ ' + date + ' ' + monthName + ' ' + year;
-            
-            document.getElementById('clock').innerHTML = dateString + ' | ' + timeString;
+            document.getElementById('clock').innerHTML = 'วัน' + dayName + 'ที่ ' + date + ' ' + monthName + ' ' + year + ' | ' + h + ':' + m + ':' + s + ' น.';
         }
 
-        // ฟังก์ชันฟอร์แมตตัวเลข (ใส่คอมม่า)
         function formatNumber(num) {
             if (!num) return '---';
             return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         }
 
-        // ฟังก์ชันดึงราคาทอง (ดึงจากไฟล์ตัวเองที่ GitHub Action สร้างให้)
-        var fetchTimeout = null;
         var attemptCount = 0;
-
         function fetchGoldPrice() {
             attemptCount++;
-            log('เริ่มดึงข้อมูล (จากไฟล์ระบบ) ครั้งที่ ' + attemptCount);
-            
-            // ดึงไฟล์จากชื่อไฟล์โดยตรง (Path แบบสัมพัทธ์)
-            // การดึงไฟล์จากโดเมนเดียวกัน จะไม่มีปัญหาเรื่องความปลอดภัยในทีวีครับ
+            log('Fetching attempt ' + attemptCount);
             var url = './latest_gold.json?t=' + new Date().getTime();
             
-            log('Target File: ' + url);
-            document.getElementById('proxy-info').innerText = 'กำลังโหลดข้อมูลจากไฟล์ระบบ (Attempt ' + attemptCount + ')...';
-            
-            _request(url, function(err, data) {
-                if (err) {
-                    log('Error: ดึงไฟล์ไม่ได้ (รหัส ' + err + ')');
-                    if (err == 404) {
-                        document.getElementById('update-info').innerText = 'ระบบกำลังสร้างไฟล์ราคาครั้งแรก (โปรดรอสักครู่)...';
-                    } else {
-                        document.getElementById('update-info').innerText = 'ไม่สามารถดึงข้อมูลได้ (Error: ' + err + ')';
-                    }
-                } else {
-                    log('ได้รับข้อมูลสำเร็จ!');
-                    renderGoldData(data);
-                    document.getElementById('proxy-info').innerText = 'ดึงข้อมูลสำเร็จ (จากระบบหลัก)';
-                }
-            });
-        }
-
-        // Helper สำหรับ XHR (ใช้ดึงไฟล์ตัวเอง)
-        function _request(url, callback) {
             var xhr = new XMLHttpRequest();
             xhr.open('GET', url, true);
             xhr.onreadystatechange = function() {
@@ -290,40 +263,35 @@
                     if (xhr.status === 200) {
                         try {
                             var data = JSON.parse(xhr.responseText);
-                            callback(null, data);
+                            renderGoldData(data);
+                            log('Fetch Success');
                         } catch (e) {
-                            callback('ParseError', null);
+                            log('JSON Parse Error');
                         }
                     } else {
-                        callback(xhr.status || 'NetworkError', null);
+                        log('Fetch Error Status: ' + xhr.status);
+                        if (xhr.status === 404) {
+                            document.getElementById('update-info').innerText = 'กำลังรอข้อมูลอัปเดตจากระบบ...';
+                        }
                     }
                 }
-            };
-            xhr.onerror = function() {
-                callback('NetworkError', null);
             };
             xhr.send();
         }
 
-        // ฟังก์ชันแสดงผลข้อมูล
         function renderGoldData(data) {
             if (data.status === 'success') {
                 var response = data.response;
                 var prices = response.price.gold_bar;
                 
-                // ราคาสมาคม (ดึงเป็นตัวเลขเพื่อคำนวณ)
                 var assoBuy = parseFloat(prices.buy.replace(/,/g, ''));
                 var assoSell = parseFloat(prices.sell.replace(/,/g, ''));
-                
-                // ราคาขายหน้าร้าน (+1450)
                 var shopSell = assoSell + 1450;
                 
-                // แสดงผลราคา
                 document.getElementById('asso-buy').innerText = formatNumber(assoBuy);
                 document.getElementById('asso-sell').innerText = formatNumber(assoSell);
                 document.getElementById('shop-sell').innerText = formatNumber(shopSell);
                 
-                // แสดงการเปลี่ยนแปลง (ขึ้น/ลง)
                 var diff = response.update_diff || "0";
                 var diffEl = document.getElementById('diff-info');
                 if (diff.indexOf('+') !== -1) {
@@ -334,72 +302,41 @@
                     diffEl.innerHTML = '<span style="color: #fff;">- ราคาคงที่ -</span>';
                 }
 
-                // ข้อมูลอัปเดต
                 document.getElementById('update-info').innerHTML = 
                     'ข้อมูลสมาคม: <span class="highlight">' + response.update_time + '</span>';
                 
-                // คำนวณเวลาที่ผ่านไป
                 calculateTimeAgo(response.update_time);
             }
         }
 
-        // ฟังก์ชันคำนวณเวลาที่อัปเดตไปแล้ว
-        var lastUpdateTimeStr = "";
-        function calculateTimeAgo(updateTimeStr) {
-            if (updateTimeStr) lastUpdateTimeStr = updateTimeStr;
-            if (!lastUpdateTimeStr) return;
+        var lastUpdate = "";
+        function calculateTimeAgo(timeStr) {
+            if (timeStr) lastUpdate = timeStr;
+            if (!lastUpdate) return;
 
             var now = new Date();
-            // ใช้ Regex สกัดเฉพาะตัวเลข ชั่วโมง:นาที หรือ ชั่วโมง.นาที
-            var matches = lastUpdateTimeStr.match(/(\d{1,2})[:.](\d{1,2})/);
-            if (!matches) return;
+            var m = lastUpdate.match(/(\d{1,2})[:.](\d{1,2})/);
+            if (!m) return;
 
-            var updateHour = parseInt(matches[1], 10);
-            var updateMin = parseInt(matches[2], 10);
+            var h = parseInt(m[1], 10);
+            var mi = parseInt(m[2], 10);
+            var d = new Date(now.getTime());
+            d.setHours(h, mi, 0, 0);
+            if (d > now) d.setDate(d.getDate() - 1);
 
-            if (isNaN(updateHour) || isNaN(updateMin)) return;
-
-            var updateDate = new Date(now.getTime()); // คัดลอกวันปัจจุบันมา
-            updateDate.setHours(updateHour, updateMin, 0, 0);
-
-            // ถ้าเวลาที่อัปเดต มากกว่าเวลาปัจจุบัน (เช่น อัปเดต 23:55 แต่อินเทอร์เน็ตเครื่องเป็น 00:05 วันถัดไป)
-            // ให้ถือว่าราคาอัปเดตตั้งแต่ "เมื่อวาน"
-            if (updateDate > now) {
-                updateDate.setDate(updateDate.getDate() - 1);
-            }
-
-            // คำนวณผลต่าง (มิลลิวินาที)
-            var diffMs = now.getTime() - updateDate.getTime();
-            var diffMins = Math.floor(diffMs / 60000);
-
-            var timeAgoEl = document.getElementById('time-ago-info');
-            if (isNaN(diffMins) || diffMins < 0) {
-                timeAgoEl.innerText = 'อัปเดตเมื่อเร็วๆ นี้';
-            } else if (diffMins === 0) {
-                timeAgoEl.innerText = 'อัปเดตเมื่อไม่กี่วินาทีที่แล้ว';
-            } else if (diffMins < 60) {
-                timeAgoEl.innerText = 'อัปเดตเมื่อ ' + diffMins + ' นาทีที่แล้ว';
-            } else {
-                var diffHours = Math.floor(diffMins / 60);
-                var remainMins = diffMins % 60;
-                timeAgoEl.innerText = 'อัปเดตเมื่อ ' + diffHours + ' ชม. ' + remainMins + ' นาทีที่แล้ว';
-            }
+            var diff = Math.floor((now.getTime() - d.getTime()) / 60000);
+            var el = document.getElementById('time-ago-info');
+            
+            if (diff <= 0) el.innerText = 'อัปเดตเมื่อเร็วๆ นี้';
+            else if (diff < 60) el.innerText = 'อัปเดตเมื่อ ' + diff + ' นาทีที่แล้ว';
+            else el.innerText = 'อัปเดตเมื่อ ' + Math.floor(diff/60) + ' ชม. ' + (diff%60) + ' นาทีที่แล้ว';
         }
 
-        // เริ่มต้นการทำงาน
-        setInterval(updateClock, 1000); // อัปเดตนาฬิกาทุกวินาที
+        setInterval(updateClock, 1000);
         updateClock();
-
-        setInterval(function() {
-            calculateTimeAgo(); // อัปเดต "กี่นาทีที่แล้ว" ทุก 10 วินาที
-        }, 10000);
-
-        // รอ 5 วินาทีก่อนดึงครั้งแรก เพื่อให้ทีวีเตรียมความพร้อมเครือข่าย
-        setTimeout(function() {
-            fetchGoldPrice();
-        }, 5000);
-
-        setInterval(fetchGoldPrice, 60000); // อัปเดตราคาทุก 60 วินาที
+        setInterval(function() { calculateTimeAgo(); }, 30000);
+        setTimeout(fetchGoldPrice, 2000);
+        setInterval(fetchGoldPrice, 60000);
     </script>
 </body>
 </html>
