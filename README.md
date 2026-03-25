@@ -11,13 +11,6 @@
 - รองรับเบราว์เซอร์รุ่นเก่า (ES5 Stealth Mode)
 - รองรับการแสดงผลบน GitHub Pages
 
-## การติดตั้งและใช้งาน (Deployment)
-
-1. อัปโหลดไฟล์ `index.html`, `logo_no_bg.png` และ `README.md` ขึ้นใน Repository ของคุณ
-2. ไปที่เมนู **Settings > Pages** ใน GitHub
-3. เลือก Branch เป็น **main** แล้วกด Save
-4. รอสักครู่ GitHub จะให้ URL สำหรับเปิดใช้งานบนทีวี
-
 ## คำขอบคุณ (Credits)
 
 ขอขอบคุณข้อมูลราคาทองคำจาก **Thai Gold API**
