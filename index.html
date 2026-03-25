@@ -13,8 +13,8 @@
             color: #ffffff;
             font-family: "Tahoma", "Arial", sans-serif; /* ฟอนต์มาตรฐานที่มักมีใน TV */
             text-align: center;
-            overflow: hidden;
-            display: block; /* ใช้ block แทน flex เพื่อความชัวร์ในรุ่นที่เก่ามากๆ */
+            overflow-y: auto; /* เปิดให้ scroll ได้หากพื้นที่ไม่พอ */
+            display: block; 
         }
 
         .container {
@@ -29,16 +29,16 @@
         }
 
         .header {
-            margin-bottom: 20px;
-        }
-
-        .logo {
-            height: 120px;
             margin-bottom: 10px;
         }
 
+        .logo {
+            height: 80px; /* ลดขนาดลงจาก 120px */
+            margin-bottom: 5px;
+        }
+
         .shop-name {
-            font-size: 48px;
+            font-size: 36px; /* ลดขนาดลงจาก 48px */
             color: #ffd700;
             font-weight: bold;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
@@ -46,9 +46,9 @@
         }
 
         .datetime-container {
-            font-size: 24px;
+            font-size: 22px;
             color: #f1c40f;
-            margin-bottom: 30px;
+            margin-bottom: 15px; /* ลดลงจาก 30px */
         }
 
         .price-grid {
@@ -69,13 +69,13 @@
         }
 
         .main-price-card {
-            width: 60%;
+            width: 65%;
             background-color: #ffd700; /* Fallback */
             background: -webkit-linear-gradient(135deg, #ffd700 0%, #b8860b 100%);
             background: linear-gradient(135deg, #ffd700 0%, #b8860b 100%);
             color: #2c0404;
             display: block;
-            margin: 0 auto 30px auto;
+            margin: 0 auto 15px auto; /* ลดลงจาก 30px */
         }
 
         .label {
@@ -204,8 +204,9 @@
         // ฟังก์ชันดึงราคาทอง
         function fetchGoldPrice() {
             var xhr = new XMLHttpRequest();
-            // ใช้ API ที่ผู้ใช้ระบุ
-            xhr.open('GET', 'https://api.chnwt.dev/thai-gold-api/latest', true);
+            // ใช้ API ที่ผู้ใช้ระบุ (เติม timestamp เพื่อเลี่ยง Cache)
+            var apiUrl = 'https://api.chnwt.dev/thai-gold-api/latest?t=' + (new Date().getTime());
+            xhr.open('GET', apiUrl, true);
             
             xhr.onreadystatechange = function() {
                 if (xhr.readyState === 4) {
@@ -241,22 +242,22 @@
 
                                 // ข้อมูลอัปเดต
                                 document.getElementById('update-info').innerHTML = 
-                                    'ข้อมูลล่าสุดจากสมาคม: <span class="highlight">' + response.update_time + '</span>';
+                                    'ข้อมูลสมาคม: <span class="highlight">' + response.update_time + '</span>';
                                 
-                                // คำนวณเวลาที่ผ่านไป (แบบง่าย)
+                                // คำนวณเวลาที่ผ่านไป
                                 calculateTimeAgo(response.update_time);
                             }
                         } catch (e) {
-                            console.error('Data parsing error', e);
+                            document.getElementById('update-info').innerText = 'ข้อมูลผิดพลาด: ' + e.message;
                         }
                     } else {
-                        document.getElementById('update-info').innerText = 'ไม่สามารถเชื่อมต่อ API ได้ (Status: ' + xhr.status + ')';
+                        document.getElementById('update-info').innerText = 'ไม่สามารถดึงข้อมูลได้ (Status: ' + xhr.status + ')';
                     }
                 }
             };
             
             xhr.onerror = function() {
-                document.getElementById('update-info').innerText = 'เกิดข้อผิดพลาดในการเชื่อมต่อเครือข่าย';
+                document.getElementById('update-info').innerText = 'การเชื่อมต่อผิดพลาด (ReadyState: ' + xhr.readyState + ')';
             };
             
             xhr.send();
@@ -313,7 +314,11 @@
             calculateTimeAgo(); // อัปเดต "กี่นาทีที่แล้ว" ทุก 10 วินาที
         }, 10000);
 
-        fetchGoldPrice(); // ดึงราคาทันทีที่โหลด
+        // รอ 2 วินาทีก่อนดึงครั้งแรก เพื่อให้ทีวีเตรียมความพร้อมเครือข่าย
+        setTimeout(function() {
+            fetchGoldPrice();
+        }, 2000);
+
         setInterval(fetchGoldPrice, 60000); // อัปเดตราคาทุก 60 วินาที
     </script>
 </body>
