@@ -142,6 +142,22 @@
         .refresh-btn:hover {
             background-color: rgba(255, 215, 0, 0.1);
         }
+
+        #debug-log {
+            margin-top: 30px;
+            padding: 10px;
+            background-color: #000;
+            color: #0f0; /* สีเขียวแบบ Terminal */
+            font-family: monospace;
+            font-size: 14px;
+            text-align: left;
+            border: 1px solid #333;
+            max-height: 150px;
+            overflow-y: auto;
+            width: 90%;
+            margin: 20px auto;
+            display: block;
+        }
     </style>
 </head>
 <body>
@@ -184,9 +200,24 @@
         <div id="time-ago-info" class="time-ago"></div>
         
         <button class="refresh-btn" onclick="location.reload();">รีเฟรชหน้าจอ</button>
+        
+        <div id="debug-log">
+            [System] เริ่มการทำงานระบบ...<br>
+        </div>
     </div>
 
     <script type="text/javascript">
+        // ฟังก์ชันช่วยบันทึก Log ลงหน้าจอ
+        function log(msg) {
+            var logEl = document.getElementById('debug-log');
+            if (logEl) {
+                var now = new Date();
+                var time = now.getHours() + ':' + now.getMinutes() + ':' + now.getSeconds();
+                logEl.innerHTML += '[' + time + '] ' + msg + '<br>';
+                logEl.scrollTop = logEl.scrollHeight;
+            }
+        }
+
         // ฟังก์ชันอัปเดตนาฬิกา
         function updateClock() {
             var now = new Date();
@@ -221,48 +252,67 @@
 
         // ฟังก์ชันดึงราคาทอง (ใช้ JSONP เพื่อข้าม CORS/SSL ในทีวีรุ่นเก่า)
         var fetchTimeout = null;
+        var attemptCount = 0;
+
         function fetchGoldPrice() {
+            attemptCount++;
+            log('เริ่มดึงข้อมูลครั้งที่ ' + attemptCount);
+            
+            var isHttps = (location.protocol === 'https:');
+            log('Protocol ปัจจุบัน: ' + location.protocol);
+            
             var targetUrl = 'https://api.chnwt.dev/thai-gold-api/latest';
-            // ใช้ AllOrigins Proxy ในโหมด JSONP (&callback=...)
-            var proxyUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent(targetUrl) + '&callback=handleGoldResponse';
+            // หากเว็บโหลดผ่าน HTTP ให้ใช้ HTTP Proxy เพื่อลดปัญหา SSL
+            var proxyBase = isHttps ? 'https://api.allorigins.win/get?url=' : 'http://api.allorigins.win/get?url=';
             
-            document.getElementById('proxy-info').innerText = 'กำลังพยายามดึงข้อมูล (JSONP Mode)...';
+            var proxyUrl = proxyBase + encodeURIComponent(targetUrl) + '&callback=handleGoldResponse&t=' + new Date().getTime();
             
-            // ล้าง Script เก่า (ถ้ามี)
+            log('Target: ' + targetUrl);
+            log('Using Proxy: ' + (isHttps ? 'HTTPS' : 'HTTP'));
+
+            document.getElementById('proxy-info').innerText = 'กำลังดึงข้อมูล (Attempt ' + attemptCount + ')...';
+            
+            // ล้าง Script เก่า
             var oldScript = document.getElementById('jsonp-script');
             if (oldScript) oldScript.parentNode.removeChild(oldScript);
             
-            // สร้าง Script ใหม่เพื่อดึงข้อมูล
+            // สร้าง Script ใหม่
             var script = document.createElement('script');
             script.id = 'jsonp-script';
             script.src = proxyUrl;
             
-            // ตั้งเวลา Timeout เผื่อโหลดไม่สำเร็จ
+            // ตั้งเวลา Timeout 30 วินาที
             if (fetchTimeout) clearTimeout(fetchTimeout);
             fetchTimeout = setTimeout(function() {
                 if (document.getElementById('asso-buy').innerText === '---') {
-                    document.getElementById('update-info').innerText = 'การดึงข้อมูลใช้เวลานานเกินไป (Timeout)';
-                    document.getElementById('proxy-info').innerText = 'โปรดลองกดปุ่มรีเฟรชด้านล่าง';
+                    log('!!! Timeout: ดึงข้อมูลไม่สำเร็จใน 30 วินาที');
+                    document.getElementById('update-info').innerText = 'ดึงข้อมูลไม่สำเร็จ (Timeout)';
                 }
-            }, 15000); // รอ 15 วินาที
+            }, 30000); 
             
+            log('Injected script tag...');
             document.body.appendChild(script);
         }
 
-        // Callback สำหรับ JSONP (ต้องเป็น Global)
+        // Callback สำหรับ JSONP
         window.handleGoldResponse = function(data) {
+            log('ได้รับ Callback จาก Proxy แล้ว!');
             if (fetchTimeout) clearTimeout(fetchTimeout);
             
             if (data && data.contents) {
                 try {
+                    log('กำลัง Parse JSON ข้อมูลราคาทอง...');
                     var realData = JSON.parse(data.contents);
                     renderGoldData(realData);
-                    document.getElementById('proxy-info').innerText = 'ดึงข้อมูลสำเร็จ (JSONP Stable)';
+                    log('แสดงผลราคาทองสำเร็จ');
+                    document.getElementById('proxy-info').innerText = 'ดึงข้อมูลสำเร็จ';
                 } catch (e) {
+                    log('Parse Error: ' + e.message);
                     document.getElementById('update-info').innerText = 'ข้อมูลผิดพลาด: ' + e.message;
                 }
             } else {
-                document.getElementById('update-info').innerText = 'ไม่ได้รับข้อมูลจากแหล่งจ่าย';
+                log('Error: ข้อมูล contents ว่างเปล่า');
+                document.getElementById('update-info').innerText = 'ไม่ได้รับข้อมูล';
             }
         };
 
