@@ -17,91 +17,93 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Fetch Price & Track Opening
-        run: |
-          echo "Fetching latest gold price..."
-          python3 -c "
-          import urllib.request, json, ssl, time, datetime
-          
-          def fetch_primary():
-              req = urllib.request.Request('https://www.goldtraders.or.th/api/GoldPrices/Latest', headers={'User-Agent': 'Mozilla/5.0'})
-              with urllib.request.urlopen(req, timeout=15) as response:
-                  data = json.loads(response.read().decode('utf-8'))
-                  as_time = datetime.datetime.fromisoformat(data['asTime'])
-                  thai_year = as_time.year + 543
-                  date_str = as_time.strftime(f'%d/%m/{thai_year}')
-                  time_str = as_time.strftime('%H:%M')
-                  return {
-                      'status': 'success',
-                      'response': {
-                          'update_date': date_str,
-                          'update_time': f'เวลา {time_str} น. (ครั้งที่ {data[\"seq\"]})',
-                          'price': {
-                              'gold': {
-                                  'buy': f\"{data['oM965_BuyPrice']:,.2f}\",
-                                  'sell': f\"{data['oM965_SellPrice']:,.2f}\"
-                              },
-                              'gold_bar': {
-                                  'buy': f\"{data['bL_BuyPrice']:,.2f}\",
-                                  'sell': f\"{data['bL_SellPrice']:,.2f}\"
-                              }
-                          }
-                      }
-                  }
-          
-          def fetch_fallback():
-              req = urllib.request.Request(f'https://api.chnwt.dev/thai-gold-api/latest?t={int(time.time())}', headers={'User-Agent': 'AlongkornShop-Bot/1.0'})
-              with urllib.request.urlopen(req, timeout=15) as response:
-                  return json.loads(response.read().decode('utf-8'))
-          
-          try:
-              print('Attempting to fetch from primary API (goldtraders.or.th)...')
-              out = fetch_primary()
-          except Exception as e:
-              print('Primary API failed:', e, '-> Falling back to chnwt API...')
-              out = fetch_fallback()
-          
-          with open('latest_gold_new.json', 'w', encoding='utf-8') as f:
-              json.dump(out, f, ensure_ascii=False)
-          "
-          
-          if grep -q "success" latest_gold_new.json; then
-            # Extract date and time/round information
-            NEW_DATE=$(cat latest_gold_new.json | jq -r '.response.update_date')
-            NEW_TIME=$(cat latest_gold_new.json | jq -r '.response.update_time')
-            
-            # Check if we need to update daily_opening.json
-            UPDATE_OPENING=false
-            if [ ! -f daily_opening.json ]; then
-              UPDATE_OPENING=true
-            else
-              OLD_DATE=$(cat daily_opening.json | jq -r '.response.update_date' 2>/dev/null || echo "")
-              if [ "$NEW_DATE" != "$OLD_DATE" ] || [[ "$NEW_TIME" == *"(ครั้งที่ 1)"* ]]; then
-                UPDATE_OPENING=true
-              fi
-            fi
-            
-            if [ "$UPDATE_OPENING" = true ]; then
-              echo "Setting new daily opening price for $NEW_DATE ($NEW_TIME)"
-              cp latest_gold_new.json daily_opening.json
-            fi
-            
-            mv latest_gold_new.json latest_gold.json
-            echo "{\"last_sync\": \"$(date -u +'%Y-%m-%dT%H:%M:%SZ')\"}" > last_sync.json
-          else
-            echo "::error::API Error: Invalid response"
-            exit 1
-          fi
-
-      - name: Commit and Force Push
+      - name: Fetch and Push Loop
         run: |
           git config --global user.name "GitHub Action"
           git config --global user.email "action@github.com"
           
-          git add latest_gold.json daily_opening.json last_sync.json
-          
-          # Force push to keep the history clean (only 1 "Sync" commit)
-          # This avoids repository bloat over time
-          TIMESTAMP=$(date +'%Y-%m-%d %H:%M:%S')
-          git commit --amend --reset-author -m "Auto-sync: Gold Price Updated at $TIMESTAMP" || git commit -m "Auto-sync: Gold Price Updated at $TIMESTAMP"
-          git push --force
+          # Run the loop 4 times, simulating a 1-minute interval over 4 minutes
+          for i in {1..4}; do
+            echo "--- Iteration $i ---"
+            echo "Fetching latest gold price..."
+            python3 -c "
+            import urllib.request, json, ssl, time, datetime
+            
+            def fetch_primary():
+                req = urllib.request.Request('https://www.goldtraders.or.th/api/GoldPrices/Latest', headers={'User-Agent': 'Mozilla/5.0'})
+                with urllib.request.urlopen(req, timeout=15) as response:
+                    data = json.loads(response.read().decode('utf-8'))
+                    as_time = datetime.datetime.fromisoformat(data['asTime'])
+                    thai_year = as_time.year + 543
+                    date_str = as_time.strftime(f'%d/%m/{thai_year}')
+                    time_str = as_time.strftime('%H:%M')
+                    return {
+                        'status': 'success',
+                        'response': {
+                            'update_date': date_str,
+                            'update_time': f'เวลา {time_str} น. (ครั้งที่ {data[\"seq\"]})',
+                            'price': {
+                                'gold': {
+                                    'buy': f\"{data['oM965_BuyPrice']:,.2f}\",
+                                    'sell': f\"{data['oM965_SellPrice']:,.2f}\"
+                                },
+                                'gold_bar': {
+                                    'buy': f\"{data['bL_BuyPrice']:,.2f}\",
+                                    'sell': f\"{data['bL_SellPrice']:,.2f}\"
+                                }
+                            }
+                        }
+                    }
+            
+            def fetch_fallback():
+                req = urllib.request.Request(f'https://api.chnwt.dev/thai-gold-api/latest?t={int(time.time())}', headers={'User-Agent': 'AlongkornShop-Bot/1.0'})
+                with urllib.request.urlopen(req, timeout=15) as response:
+                    return json.loads(response.read().decode('utf-8'))
+            
+            try:
+                print('Attempting to fetch from primary API (goldtraders.or.th)...')
+                out = fetch_primary()
+            except Exception as e:
+                print('Primary API failed:', e, '-> Falling back to chnwt API...')
+                out = fetch_fallback()
+            
+            with open('latest_gold_new.json', 'w', encoding='utf-8') as f:
+                json.dump(out, f, ensure_ascii=False)
+            "
+            
+            if grep -q "success" latest_gold_new.json; then
+              NEW_DATE=$(cat latest_gold_new.json | jq -r '.response.update_date')
+              NEW_TIME=$(cat latest_gold_new.json | jq -r '.response.update_time')
+              
+              UPDATE_OPENING=false
+              if [ ! -f daily_opening.json ]; then
+                UPDATE_OPENING=true
+              else
+                OLD_DATE=$(cat daily_opening.json | jq -r '.response.update_date' 2>/dev/null || echo "")
+                if [ "$NEW_DATE" != "$OLD_DATE" ] || [[ "$NEW_TIME" == *"(ครั้งที่ 1)"* ]]; then
+                  UPDATE_OPENING=true
+                fi
+              fi
+              
+              if [ "$UPDATE_OPENING" = true ]; then
+                echo "Setting new daily opening price for $NEW_DATE ($NEW_TIME)"
+                cp latest_gold_new.json daily_opening.json
+              fi
+              
+              mv latest_gold_new.json latest_gold.json
+              echo "{\"last_sync\": \"$(date -u +'%Y-%m-%dT%H:%M:%SZ')\"}" > last_sync.json
+              
+              git add latest_gold.json daily_opening.json last_sync.json
+              
+              TIMESTAMP=$(date +'%Y-%m-%d %H:%M:%S')
+              git commit --amend --reset-author -m "Auto-sync: Gold Price Updated at $TIMESTAMP" || git commit -m "Auto-sync: Gold Price Updated at $TIMESTAMP" || true
+              git push --force || true
+            else
+              echo "::error::API Error: Invalid response"
+            fi
+            
+            if [ "$i" -lt 4 ]; then
+              echo "Waiting 60 seconds before next fetch..."
+              sleep 80
+            fi
+          done
