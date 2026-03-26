@@ -268,34 +268,29 @@
             };
             openingXhr.send();
 
-            // 2. ดึงราคาทองล่าสุด
+            // 2. ดึงราคาทองล่าสุดจาก API โดยตรงเพื่อป้องกันการดีเลย์จาก GitHub Pages Cache
             var xhr = new XMLHttpRequest();
-            xhr.open('GET', './latest_gold.json?v=' + new Date().getTime(), true);
+            xhr.open('GET', 'https://api.chnwt.dev/thai-gold-api/latest?v=' + new Date().getTime(), true);
             xhr.onreadystatechange = function() {
-                if (xhr.readyState === 4 && xhr.status === 200) {
-                    try { renderData(JSON.parse(xhr.responseText)); } catch (e) {}
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        try {
+                            renderData(JSON.parse(xhr.responseText));
+                            var now = new Date();
+                            var timeStr = now.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                            document.getElementById('sync-status').innerHTML = '🟢 เชื่อมต่อล่าสุด: ' + timeStr + ' น.';
+                        } catch (e) {
+                            document.getElementById('sync-status').innerText = '🟡 กำลังรอข้อมูลใหม่...';
+                        }
+                    } else {
+                        document.getElementById('sync-status').innerText = '🔴 ไม่สามารถดึงสถานะล่าสุดได้';
+                    }
                 }
             };
             xhr.send();
 
-            // 3. ดึงสถานะเชื่อมต่อ (Sync Status)
-            var syncXhr = new XMLHttpRequest();
-            syncXhr.open('GET', './last_sync.json?v=' + new Date().getTime(), true);
-            syncXhr.onreadystatechange = function() {
-                if (syncXhr.readyState === 4 && syncXhr.status === 200) {
-                    try {
-                        var s = JSON.parse(syncXhr.responseText);
-                        var lastSyncDate = new Date(s.last_sync);
-                        var timeStr = lastSyncDate.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
-                        document.getElementById('sync-status').innerHTML = '🟢 เชื่อมต่อล่าสุด: ' + timeStr + ' น.';
-                    } catch (e) {
-                        document.getElementById('sync-status').innerText = '🟡 กำลังรอข้อมูลใหม่...';
-                    }
-                } else if (syncXhr.readyState === 4 && syncXhr.status !== 200) {
-                    document.getElementById('sync-status').innerText = '🔴 ไม่สามารถดึงสถานะล่าสุดได้';
-                }
-            };
-            syncXhr.send();
+            // 3. กำหนดสถานะเชื่อมต่อ (Sync Status) เมื่อดึงข้อมูลสำเร็จ
+            // จะถูกอัปเดตใน onreadystatechange ของ latest_gold ด้านบน
         }
 
         function renderData(data) {
