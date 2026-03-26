@@ -12,14 +12,22 @@
             padding: 0;
         }
 
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden; /* ห้ามมี Scrollbar เด็ดขาด */
+        }
+
         body {
             background-color: #800000; /* สีแดงเข้มพื้นฐาน */
             color: #FFFFFF;
             font-family: 'Arial', 'Helvetica', 'Tahoma', sans-serif;
             text-align: center;
-            overflow: hidden; /* ห้ามมี Scrollbar เด็ดขาด */
             width: 100%;
-            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         /* 
@@ -238,6 +246,8 @@
 
         // ระบบ Real-time Fetch
         var fetchTimer = 10;
+        var openingData = null;
+
         function updateHeartbeat() {
             fetchTimer--;
             if (fetchTimer <= 0) {
@@ -248,7 +258,17 @@
         }
 
         function fetchData() {
-            // ดึงราคาทอง
+            // 1. ดึงราคาทองเปิดตลาด (ดึงครั้งเดียวหรือดึงซ้ำเพื่อความชัวร์)
+            var openingXhr = new XMLHttpRequest();
+            openingXhr.open('GET', './daily_opening.json?v=' + new Date().getTime(), true);
+            openingXhr.onreadystatechange = function() {
+                if (openingXhr.readyState === 4 && openingXhr.status === 200) {
+                    try { openingData = JSON.parse(openingXhr.responseText); } catch (e) {}
+                }
+            };
+            openingXhr.send();
+
+            // 2. ดึงราคาทองล่าสุด
             var xhr = new XMLHttpRequest();
             xhr.open('GET', './latest_gold.json?v=' + new Date().getTime(), true);
             xhr.onreadystatechange = function() {
@@ -258,7 +278,7 @@
             };
             xhr.send();
 
-            // ดึงสถานะเชื่อมต่อ (Sync Status)
+            // 3. ดึงสถานะเชื่อมต่อ (Sync Status)
             var syncXhr = new XMLHttpRequest();
             syncXhr.open('GET', './last_sync.json?v=' + new Date().getTime(), true);
             syncXhr.onreadystatechange = function() {
@@ -290,14 +310,22 @@
                 document.getElementById('asso-sell').innerText = formatNumber(sell);
                 document.getElementById('shop-sell').innerText = formatNumber(shopSale);
                 
-                var diff = res.update_diff || "0";
+                // คำนวณส่วนต่างจากราคาเปิดตลาด
                 var diffEl = document.getElementById('diff-info');
-                if (diff.indexOf('+') !== -1) {
-                    diffEl.innerHTML = '<span class="price-up">▲ ขึ้น ' + diff + ' บาท</span>';
-                } else if (diff.indexOf('-') !== -1) {
-                    diffEl.innerHTML = '<span class="price-down">▼ ลง ' + diff + ' บาท</span>';
+                if (openingData && openingData.response) {
+                    var openSell = parseFloat(openingData.response.price.gold_bar.sell.replace(/,/g, ''));
+                    var currentSell = sell;
+                    var diffValue = currentSell - openSell;
+                    
+                    if (diffValue > 0) {
+                        diffEl.innerHTML = '<span class="price-up">▲ วันนี้ขึ้น ' + formatNumber(diffValue) + ' บาท</span>';
+                    } else if (diffValue < 0) {
+                        diffEl.innerHTML = '<span class="price-down">▼ วันนี้ลง ' + formatNumber(Math.abs(diffValue)) + ' บาท</span>';
+                    } else {
+                        diffEl.innerHTML = '<span class="price-equal">- ราคาเท่าตอนเปิดตลาด -</span>';
+                    }
                 } else {
-                    diffEl.innerHTML = '<span class="price-equal">- ราคาคงที่ -</span>';
+                    diffEl.innerHTML = '<span class="price-equal">- กำลังคำนวณส่วนต่าง... -</span>';
                 }
 
                 document.getElementById('update-info').innerHTML = 'สมาคมอัปเดต: ' + res.update_time;
