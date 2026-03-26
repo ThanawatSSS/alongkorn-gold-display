@@ -245,13 +245,13 @@
         }
 
         // ระบบ Real-time Fetch
-        var fetchTimer = 10;
+        var fetchTimer = 60; // ขอข้อมูลใหม่ทุกๆ 60 วินาที
         var openingData = null;
 
         function updateHeartbeat() {
             fetchTimer--;
             if (fetchTimer <= 0) {
-                fetchTimer = 10;
+                fetchTimer = 60;
                 fetchData();
             }
             document.getElementById('heartbeat-text').innerText = 'ตรวจราคาอีกครั้งใน ' + fetchTimer + ' วินาที';
