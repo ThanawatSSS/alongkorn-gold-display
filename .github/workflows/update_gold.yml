@@ -27,49 +27,49 @@ jobs:
             echo "--- Iteration $i ---"
             echo "Fetching latest gold price..."
             python3 -c "
-import urllib.request, json, ssl, time, datetime
-
-def fetch_primary():
-    req = urllib.request.Request('https://www.goldtraders.or.th/api/GoldPrices/Latest', headers={'User-Agent': 'Mozilla/5.0'})
-    with urllib.request.urlopen(req, timeout=15) as response:
-        data = json.loads(response.read().decode('utf-8'))
-        as_time = datetime.datetime.fromisoformat(data['asTime'])
-        thai_year = as_time.year + 543
-        date_str = as_time.strftime(f'%d/%m/{thai_year}')
-        time_str = as_time.strftime('%H:%M')
-        return {
-            'status': 'success',
-            'response': {
-                'update_date': date_str,
-                'update_time': f'เวลา {time_str} น. (ครั้งที่ {data[\"seq\"]})',
-                'price': {
-                    'gold': {
-                        'buy': f\"{data['oM965_BuyPrice']:,.2f}\",
-                        'sell': f\"{data['oM965_SellPrice']:,.2f}\"
-                    },
-                    'gold_bar': {
-                        'buy': f\"{data['bL_BuyPrice']:,.2f}\",
-                        'sell': f\"{data['bL_SellPrice']:,.2f}\"
-                    }
-                }
-            }
-        }
-
-def fetch_fallback():
-    req = urllib.request.Request(f'https://api.chnwt.dev/thai-gold-api/latest?t={int(time.time())}', headers={'User-Agent': 'AlongkornShop-Bot/1.0'})
-    with urllib.request.urlopen(req, timeout=15) as response:
-        return json.loads(response.read().decode('utf-8'))
-
-try:
-    print('Attempting to fetch from primary API (goldtraders.or.th)...')
-    out = fetch_primary()
-except Exception as e:
-    print('Primary API failed:', e, '-> Falling back to chnwt API...')
-    out = fetch_fallback()
-
-with open('latest_gold_new.json', 'w', encoding='utf-8') as f:
-    json.dump(out, f, ensure_ascii=False)
-"
+          import urllib.request, json, ssl, time, datetime
+          
+          def fetch_primary():
+              req = urllib.request.Request('https://www.goldtraders.or.th/api/GoldPrices/Latest', headers={'User-Agent': 'Mozilla/5.0'})
+              with urllib.request.urlopen(req, timeout=15) as response:
+                  data = json.loads(response.read().decode('utf-8'))
+                  as_time = datetime.datetime.fromisoformat(data['asTime'])
+                  thai_year = as_time.year + 543
+                  date_str = as_time.strftime(f'%d/%m/{thai_year}')
+                  time_str = as_time.strftime('%H:%M')
+                  return {
+                      'status': 'success',
+                      'response': {
+                          'update_date': date_str,
+                          'update_time': f'เวลา {time_str} น. (ครั้งที่ {data[\"seq\"]})',
+                          'price': {
+                              'gold': {
+                                  'buy': f\"{data['oM965_BuyPrice']:,.2f}\",
+                                  'sell': f\"{data['oM965_SellPrice']:,.2f}\"
+                              },
+                              'gold_bar': {
+                                  'buy': f\"{data['bL_BuyPrice']:,.2f}\",
+                                  'sell': f\"{data['bL_SellPrice']:,.2f}\"
+                              }
+                          }
+                      }
+                  }
+          
+          def fetch_fallback():
+              req = urllib.request.Request(f'https://api.chnwt.dev/thai-gold-api/latest?t={int(time.time())}', headers={'User-Agent': 'AlongkornShop-Bot/1.0'})
+              with urllib.request.urlopen(req, timeout=15) as response:
+                  return json.loads(response.read().decode('utf-8'))
+          
+          try:
+              print('Attempting to fetch from primary API (goldtraders.or.th)...')
+              out = fetch_primary()
+          except Exception as e:
+              print('Primary API failed:', e, '-> Falling back to chnwt API...')
+              out = fetch_fallback()
+          
+          with open('latest_gold_new.json', 'w', encoding='utf-8') as f:
+              json.dump(out, f, ensure_ascii=False)
+          "
             
             if grep -q "success" latest_gold_new.json; then
               NEW_DATE=$(cat latest_gold_new.json | jq -r '.response.update_date')
