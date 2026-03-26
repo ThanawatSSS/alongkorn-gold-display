@@ -15,8 +15,10 @@ jobs:
       
       - name: Fetch Price & Update Sync
         run: |
-          # ดึงราคาทองล่าสุด พร้อมใส่ Cache Buster
-          curl -s "https://api.chnwt.dev/thai-gold-api/latest?t=$(date +%s)" > latest_gold_new.json
+          # ดึงราคาทองล่าสุด พร้อมใส่ Cache Buster และ Headers ป้องกัน Cache
+          curl -s -H "Cache-Control: no-cache" -H "Pragma: no-cache" \
+               -A "AlongkornShop-Bot/1.0 (+https://github.com/${{ github.repository }})" \
+               "https://api.chnwt.dev/thai-gold-api/latest?t=$(date +%s)" > latest_gold_new.json
           
           # ตรวจสอบว่าไฟล์ไม่ว่างและเป็น JSON ที่ถูกต้อง (มีคำว่า success)
           if grep -q "success" latest_gold_new.json; then
