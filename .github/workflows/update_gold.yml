@@ -12,28 +12,41 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      
+        with:
+          fetch-depth: 0
+
       - name: Fetch Price & Update Sync
         run: |
-          # ดึงราคาทองล่าสุด พร้อมใส่ Cache Buster และ Headers ป้องกัน Cache
+          echo "Fetching latest gold price..."
+          # Fetch with cache buster and custom user agent
           curl -s -H "Cache-Control: no-cache" -H "Pragma: no-cache" \
                -A "AlongkornShop-Bot/1.0 (+https://github.com/${{ github.repository }})" \
                "https://api.chnwt.dev/thai-gold-api/latest?t=$(date +%s)" > latest_gold_new.json
           
-          # ตรวจสอบว่าไฟล์ไม่ว่างและเป็น JSON ที่ถูกต้อง (มีคำว่า success)
+          # Validate JSON structure (must contain 'success')
           if grep -q "success" latest_gold_new.json; then
+            echo "API Success: Updating files."
             mv latest_gold_new.json latest_gold.json
-            # บันทึกเวลาที่เช็คล่าสุด (ISO Format) เพื่อให้ระบบมีการ Push ทุก 5 นาที
+            # Use UTC ISO format for sync timestamp
             echo "{\"last_sync\": \"$(date -u +'%Y-%m-%dT%H:%M:%SZ')\"}" > last_sync.json
           else
-            echo "Error: Invalid API response"
+            echo "::error::API Error: Invalid response from thai-gold-api"
+            cat latest_gold_new.json
             exit 1
           fi
-          
+
       - name: Commit and Push
         run: |
           git config --global user.name "GitHub Action"
           git config --global user.email "action@github.com"
+          
+          # Only add if files changed (though last_sync.json always changes)
           git add latest_gold.json last_sync.json
-          git commit -m "Update gold price & sync status" || exit 0
-          git push
+          
+          TIMESTAMP=$(date +'%Y-%m-%d %H:%M:%S')
+          if git commit -m "Auto-sync: Gold Price Updated at $TIMESTAMP" ; then
+            echo "Changes detected and committed."
+            git push
+          else
+            echo "No changes to commit."
+          fi
