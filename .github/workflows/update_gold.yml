@@ -1,7 +1,7 @@
 name: Update Gold Price
 on:
   schedule:
-    - cron: '*/2 * * * *'
+    - cron: '*/5 * * * *'
   workflow_dispatch:
 
 jobs:
@@ -101,5 +101,5 @@ jobs:
           # Force push to keep the history clean (only 1 "Sync" commit)
           # This avoids repository bloat over time
           TIMESTAMP=$(date +'%Y-%m-%d %H:%M:%S')
-          git commit --amend -m "Auto-sync: Gold Price Updated at $TIMESTAMP" || git commit -m "Auto-sync: Gold Price Updated at $TIMESTAMP"
+          git commit --amend --reset-author -m "Auto-sync: Gold Price Updated at $TIMESTAMP" || git commit -m "Auto-sync: Gold Price Updated at $TIMESTAMP"
           git push --force
