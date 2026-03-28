@@ -206,41 +206,87 @@ function updateClock(){
 setInterval(updateClock,1000);
 updateClock();
 
-function fetchData(){
-    var xhr=new XMLHttpRequest();
-    xhr.open('GET','latest_gold.json?v='+new Date().getTime(),true);
-    xhr.onreadystatechange=function(){
-        if(xhr.readyState==4 && xhr.status==200){
-            var data=JSON.parse(xhr.responseText);
-            var res=data.response;
+/* 🔥 state กลาง */
+var latestData = null;
+var openingData = null;
 
-            var buy=parseFloat(res.price.gold_bar.buy.replace(/,/g,''));
-            var sell=parseFloat(res.price.gold_bar.sell.replace(/,/g,''));
-            var shop=sell+1450;
-
-            document.getElementById('asso-buy').innerText=formatNumber(buy);
-            document.getElementById('asso-sell').innerText=formatNumber(sell);
-            document.getElementById('shop-sell').innerText=formatNumber(shop);
-
-            var cleanTime = res.update_time.replace('เวลา ', '');
-
-            document.getElementById('update-info').innerHTML =
-              'อัปเดต: ' + res.update_date + ' ' + cleanTime;
-
-            var now=new Date();
-            var h=now.getHours(),m=now.getMinutes();
-            h=h<10?'0'+h:h;
-            m=m<10?'0'+m:m;
-
-            document.getElementById('sync-status').innerHTML=
-              '<span style="color:#00FF00;">●</span> เชื่อมต่อล่าสุด '+h+':'+m+' น.';
+/* โหลด JSON */
+function fetchJSON(url, callback){
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', url + '?v=' + new Date().getTime(), true);
+    xhr.onreadystatechange = function(){
+        if(xhr.readyState === 4 && xhr.status === 200){
+            try {
+                callback(JSON.parse(xhr.responseText));
+            } catch(e){}
         }
     };
     xhr.send();
 }
 
-setInterval(fetchData,10000);
-fetchData();
+/* render กลาง */
+function tryRender(){
+    if(!latestData || !openingData) return;
+
+    var res = latestData.response;
+
+    var buy = parseFloat(res.price.gold_bar.buy.replace(/,/g,''));
+    var sell = parseFloat(res.price.gold_bar.sell.replace(/,/g,''));
+    var shop = sell + 1450;
+
+    document.getElementById('asso-buy').innerText = formatNumber(buy);
+    document.getElementById('asso-sell').innerText = formatNumber(sell);
+    document.getElementById('shop-sell').innerText = formatNumber(shop);
+
+    /* date + time */
+    var cleanTime = res.update_time.replace('เวลา ', '');
+    document.getElementById('update-info').innerHTML =
+      'อัปเดต: ' + res.update_date + ' ' + cleanTime;
+
+    /* 🔥 diff */
+    var openSell = parseFloat(openingData.response.price.gold_bar.sell.replace(/,/g,''));
+    var diff = sell - openSell;
+
+    var diffEl = document.getElementById('diff-info');
+
+    if(diff > 0){
+        diffEl.innerHTML = '<span class="price-up">▲ วันนี้ขึ้น ' + formatNumber(diff) + ' บาท</span>';
+    }
+    else if(diff < 0){
+        diffEl.innerHTML = '<span class="price-down">▼ วันนี้ลง ' + formatNumber(Math.abs(diff)) + ' บาท</span>';
+    }
+    else{
+        diffEl.innerHTML = '<span class="price-equal">- ราคาเท่าตอนเปิดตลาด -</span>';
+    }
+
+    /* sync status */
+    var now = new Date();
+    var h = now.getHours(), m = now.getMinutes();
+    h = h < 10 ? '0'+h : h;
+    m = m < 10 ? '0'+m : m;
+
+    document.getElementById('sync-status').innerHTML =
+      '<span style="color:#00FF00;">●</span> เชื่อมต่อล่าสุด ' + h + ':' + m + ' น.';
+}
+
+/* fetch ทั้งสอง */
+function fetchAll(){
+    latestData = null;
+    openingData = null;
+
+    fetchJSON('latest_gold.json', function(data){
+        latestData = data;
+        tryRender();
+    });
+
+    fetchJSON('daily_opening.json', function(data){
+        openingData = data;
+        tryRender();
+    });
+}
+
+setInterval(fetchAll, 10000);
+fetchAll();
 </script>
 
 </body>
