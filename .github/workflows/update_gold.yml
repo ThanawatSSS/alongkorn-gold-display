@@ -1,7 +1,8 @@
 name: Update Gold Price
+
 on:
   schedule:
-    - cron: '*/10 * * * *'
+    - cron: '*/15 * * * *'
   workflow_dispatch:
 
 concurrency:
@@ -13,108 +14,105 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+      - uses: actions/checkout@v4
 
-      - name: Fetch and Process Loop
+      - name: Fetch & Normalize
         run: |
-          git config --global user.name "GitHub Action"
-          git config --global user.email "action@github.com"
-          
-          for i in {1..4}; do
-            echo "--- Iteration $i ---"
-            
-            python3 -c "
-          import urllib.request, json, time, datetime
+          python3 << 'EOF'
+          import urllib.request, json, datetime, time, random, os
 
-          # ฟังก์ชันช่วยจัดรูปแบบตัวเลขให้เป็น String แบบมีคอมม่า (เหมือนเส้น chnwt)
-          def fmt(num):
-              return f'{float(num):,.2f}'
+          def fetch(url, headers):
+              req = urllib.request.Request(url, headers=headers)
+              with urllib.request.urlopen(req, timeout=10) as r:
+                  return json.loads(r.read().decode())
 
-          def fetch_primary():
-              req = urllib.request.Request('https://www.goldtraders.or.th/api/GoldPrices/Latest', headers={'User-Agent': 'Mozilla/5.0'})
-              with urllib.request.urlopen(req, timeout=15) as response:
-                  data = json.loads(response.read().decode('utf-8'))
-                  as_time = datetime.datetime.fromisoformat(data['asTime'])
-                  thai_year = as_time.year + 543
-                  # แปลง Raw Data ให้เป็น Standard Format
-                  return {
-                      'status': 'success',
-                      'response': {
-                          'update_date': as_time.strftime(f'%d/%m/{thai_year}'),
-                          'update_time': f'เวลา {as_time.strftime(\"%H:%M\")} น. (ครั้งที่ {data[\"seq\"]})',
-                          'price': {
-                              'gold': {'buy': fmt(data['oM965_BuyPrice']), 'sell': fmt(data['oM965_SellPrice'])},
-                              'gold_bar': {'buy': fmt(data['bL_BuyPrice']), 'sell': fmt(data['bL_SellPrice'])}
+          def fmt(x):
+              return f"{float(x):,.2f}"
+
+          def transform_goldtraders(data):
+              as_time = datetime.datetime.fromisoformat(data["asTime"])
+              thai_year = as_time.year + 543
+              return {
+                  "status": "success",
+                  "response": {
+                      "update_date": as_time.strftime(f"%d/%m/{thai_year}"),
+                      "update_time": f"เวลา {as_time.strftime('%H:%M')} น. (ครั้งที่ {data['seq']})",
+                      "price": {
+                          "gold": {
+                              "buy": fmt(data["oM965_BuyPrice"]),
+                              "sell": fmt(data["oM965_SellPrice"])
+                          },
+                          "gold_bar": {
+                              "buy": fmt(data["bL_BuyPrice"]),
+                              "sell": fmt(data["bL_SellPrice"])
                           }
                       }
                   }
+              }
 
-          def fetch_fallback():
-              req = urllib.request.Request(f'https://api.chnwt.dev/thai-gold-api/latest?t={int(time.time())}', headers={'User-Agent': 'AlongkornShop-Bot/1.0'})
-              with urllib.request.urlopen(req, timeout=15) as response:
-                  raw = json.loads(response.read().decode('utf-8'))
-                  # chnwt มาในรูปแบบที่ต้องการอยู่แล้ว แต่เราครอบ status: success ให้ชัวร์
-                  return {
-                      'status': 'success',
-                      'response': raw['response']
-                  }
+          def transform_chnwt(data):
+              return {
+                  "status": "success",
+                  "response": data["response"]
+              }
 
-          final_data = None
+          # ✅ random delay กัน bot detect
+          delay = random.uniform(0.5, 1.5)
+          print(f"Sleeping {delay:.2f}s before request...")
+          time.sleep(delay)
+
+          final = None
+
           try:
-              print('Attempting Primary API...')
-              final_data = fetch_primary()
+              raw = fetch(
+                  "https://www.goldtraders.or.th/api/GoldPrices/Latest",
+                  {"User-Agent": "Mozilla/5.0"}
+              )
+              final = transform_goldtraders(raw)
+              print("Primary OK")
           except Exception as e:
-              print(f'Primary Error: {e}. Switching to Fallback...')
+              print("Primary failed:", e)
               try:
-                  final_data = fetch_fallback()
+                  raw = fetch(
+                      "https://api.chnwt.dev/thai-gold-api/latest",
+                      {"User-Agent": "GoldBot/1.0"}
+                  )
+                  final = transform_chnwt(raw)
+                  print("Fallback OK")
               except Exception as e2:
-                  print(f'Fallback Error: {e2}')
+                  print("Fallback failed:", e2)
 
-          if final_data:
-              with open('latest_gold_temp.json', 'w', encoding='utf-8') as f:
-                  json.dump(final_data, f, ensure_ascii=False, indent=2)
-            "
+          if final:
+              # ✅ เช็คว่า update_time ซ้ำไหม
+              new_time = final["response"]["update_time"]
 
-            # เปรียบเทียบราคาเพื่อตัดสินใจอัปเดตไฟล์ใน Runner
-            if [ -f latest_gold_temp.json ]; then
-              NEW_PRICE=$(jq -c '.response.price' latest_gold_temp.json)
-              OLD_PRICE=$(jq -c '.response.price' latest_gold.json 2>/dev/null || echo "none")
-              
-              if [ "$NEW_PRICE" != "$OLD_PRICE" ]; then
-                echo "Price changed or first run! Updating local files..."
-                cp latest_gold_temp.json latest_gold.json
-                
-                # เช็คราคาเปิดตลาด (ครั้งที่ 1)
-                NEW_TIME=$(jq -r '.response.update_time' latest_gold_temp.json)
-                if [[ "$NEW_TIME" == *"(ครั้งที่ 1)"* ]]; then
-                   echo "New daily opening detected."
-                   cp latest_gold_temp.json daily_opening.json
-                fi
-              else
-                echo "Price is identical. Skipping local update."
-              fi
-              rm latest_gold_temp.json
-            fi
+              old_time = None
+              if os.path.exists("latest_gold.json"):
+                  with open("latest_gold.json", "r", encoding="utf-8") as f:
+                      try:
+                          old = json.load(f)
+                          old_time = old["response"]["update_time"]
+                      except:
+                          pass
 
-            if [ "$i" -lt 4 ]; then
-              echo "Waiting 80s..."
-              sleep 80
-            fi
-          done
+              if new_time == old_time:
+                  print("Same update_time → skip write")
+              else:
+                  with open("latest_gold.json", "w", encoding="utf-8") as f:
+                      json.dump(final, f, ensure_ascii=False, indent=2)
+                  print("Updated file")
+          EOF
 
-      - name: Commit and Push
+      - name: Commit if changed
         run: |
-          # ตรวจสอบว่ามีไฟล์เปลี่ยนแปลงใน Git หรือไม่ (กันการ Push พร่ำเพรื่อตอนตลาดปิด)
-          if [[ -n $(git status --porcelain latest_gold.json daily_opening.json) ]]; then
-            echo "Changes found. Committing to repository..."
-            echo "{\"last_sync\": \"$(date -u +'%Y-%m-%dT%H:%M:%SZ')\"}" > last_sync.json
-            git add latest_gold.json daily_opening.json last_sync.json
-            git commit -m "Auto-sync: Gold Price Updated at $(date +'%Y-%m-%d %H:%M:%S')"
-            git push origin main
+          if [[ -n $(git status --porcelain latest_gold.json) ]]; then
+            git config user.name "github-actions"
+            git config user.email "action@github.com"
+            git add latest_gold.json
+            git commit -m "Update gold price $(date +'%H:%M')"
+            git push
           else
-            echo "No actual data changes. No push needed today."
+            echo "No change"
           fi
