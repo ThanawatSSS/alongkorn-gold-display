@@ -2,6 +2,8 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
+    <link rel="preload" href="./latest_gold.json" as="fetch">
+    <meta http-equiv="refresh" content="1800">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ร้านทองอลงกรณ์ - ราคาทองวันนี้</title>
     <style>
@@ -11,6 +13,7 @@
             margin: 0;
             padding: 0;
         }
+        font-family: Arial, Helvetica, Tahoma, sans-serif;
 
         html, body {
             height: 100%;
@@ -361,8 +364,11 @@
         }
 
         // เริ่มต้นการทำงาน
-        setInterval(updateClock, 1000); updateClock();
-        setInterval(updateHeartbeat, 1000);
+        if (!window._init) {
+    window._init = true;
+    setInterval(updateClock, 1000);
+    setInterval(updateHeartbeat, 1000);
+}
         fetchData();
     </script>
 </body>
