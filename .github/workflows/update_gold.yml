@@ -94,6 +94,19 @@ jobs:
                 cp latest_gold_new.json daily_opening.json
               fi
               
+            PRICE_CHANGED=false
+            if [ ! -f latest_gold.json ]; then
+              PRICE_CHANGED=true
+            else
+              NEW_PRICE=$(jq -c '.response.price' latest_gold_new.json)
+              OLD_PRICE=$(jq -c '.response.price' latest_gold.json 2>/dev/null || echo "")
+              if [ "$NEW_PRICE" != "$OLD_PRICE" ]; then
+                PRICE_CHANGED=true
+              fi
+            fi
+
+            if [ "$PRICE_CHANGED" = true ] || [ "$UPDATE_OPENING" = true ]; then
+              echo "Price changed or Daily opening updated. Pushing changes..."
               mv latest_gold_new.json latest_gold.json
               echo "{\"last_sync\": \"$(date -u +'%Y-%m-%dT%H:%M:%SZ')\"}" > last_sync.json
               
@@ -103,8 +116,12 @@ jobs:
               git commit --amend --reset-author -m "Auto-sync: Gold Price Updated at $TIMESTAMP" || git commit -m "Auto-sync: Gold Price Updated at $TIMESTAMP" || true
               git push --force || true
             else
-              echo "::error::API Error: Invalid response"
+              echo "No price change detected. Skipping push to avoid excessive deployments."
+              rm latest_gold_new.json
             fi
+          else
+            echo "::error::API Error: Invalid response"
+          fi
             
             if [ "$i" -lt 4 ]; then
               echo "Waiting 60 seconds before next fetch..."
