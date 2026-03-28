@@ -1,375 +1,247 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-    <meta charset="UTF-8">
-    <link rel="preload" href="./latest_gold.json" as="fetch">
-    <meta http-equiv="refresh" content="1800">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ร้านทองอลงกรณ์ - ราคาทองวันนี้</title>
-    <style>
-        /* Legacy CSS Reset */
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-        font-family: Arial, Helvetica, Tahoma, sans-serif;
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        html, body {
-            height: 100%;
-            margin: 0;
-            padding: 0;
-            overflow: hidden; /* ห้ามมี Scrollbar เด็ดขาด */
-        }
+<meta http-equiv="refresh" content="1800">
 
-        body {
-            background-color: #800000; /* สีแดงเข้มพื้นฐาน */
-            color: #FFFFFF;
-            font-family: 'Arial', 'Helvetica', 'Tahoma', sans-serif;
-            text-align: center;
-            width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+<title>ร้านทองอลงกรณ์ - ราคาทองวันนี้</title>
 
-        /* 
-           ใช้ Table Layout เพื่อบังคับการวางตัว 2 คอลัมน์ 
-           ซึ่งเป็นวิธีที่เสถียรที่สุดในเบราว์เซอร์ทีวีรุ่นเก่าครับ 
-        */
-        .main-table {
-            display: table;
-            width: 100%;
-            height: 100%;
-            border-spacing: 15px;
-            table-layout: fixed;
-        }
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
-        .main-row {
-            display: table-row;
-        }
+html, body {
+    height: 100%;
+    overflow: hidden;
+}
 
-        .left-col {
-            display: table-cell;
-            vertical-align: middle;
-            width: 60%;
-            background-color: #4A0000;
-            border: 5px solid #FFD700;
-            border-radius: 20px;
-            padding: 20px;
-        }
+body {
+    background-color: #800000;
+    background-image: linear-gradient(#800000, #5a0000);
+    color: #FFFFFF;
+    font-family: Arial, Helvetica, Tahoma, sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 
-        .right-col {
-            display: table-cell;
-            vertical-align: middle;
-            width: 40%;
-            padding-left: 10px;
-        }
+.main-table {
+    display: table;
+    width: 100%;
+    height: 100%;
+    border-spacing: 10px 5px;
+}
 
-        /* Header ในฝั่งซ้าย */
-        .shop-header {
-            border-bottom: 2px solid #FFD700;
-            padding-bottom: 10px;
-            margin-bottom: 20px;
-        }
+.main-row { display: table-row; }
 
-        .shop-logo {
-            width: 80px;
-            height: 80px;
-            vertical-align: middle;
-        }
+.left-col {
+    display: table-cell;
+    vertical-align: middle;
+    width: 60%;
+    background-color: #4A0000;
+    border: 5px solid #FFD700;
+    border-radius: 20px;
+    padding: 10px 20px;
+}
 
-        .shop-name {
-            display: inline-block;
-            font-size: 36px;
-            color: #FFD700;
-            font-weight: bold;
-            margin-left: 15px;
-            vertical-align: middle;
-        }
+.right-col {
+    display: table-cell;
+    vertical-align: middle;
+    width: 40%;
+}
 
-        /* ราคาหลัก */
-        .price-hero-container {
-            margin: 20px 0;
-        }
+/* HEADER */
+.shop-header {
+    border-bottom: 2px solid #FFD700;
+    padding-bottom: 5px;
+    margin-bottom: 10px;
+}
 
-        .hero-label {
-            font-size: 28px;
-            color: #FFFFFF;
-            margin-bottom: 10px;
-            font-weight: bold;
-        }
+.shop-logo {
+    width: 100px;
+    height: 100px;
+    vertical-align: middle;
+}
 
-        .hero-price {
+.shop-name {
+    display: inline-block;
+    font-size: 44px;
+    color: #FFD700;
+    font-weight: bold;
+    margin-left: 15px;
+    vertical-align: middle;
+}
+
+/* HERO */
+.hero-label {
+    font-size: 28px;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+.hero-price {
     font-size: 110px;
     color: #FFD700;
     font-weight: bold;
-    line-height: 1.1;
-
-    text-shadow: 
-        3px 3px 0 #000,
-        0 0 10px rgba(255,215,0,0.3);
+    line-height: 1;
+    text-shadow: 4px 4px 0 #000;
 }
 
-        .hero-unit {
-            font-size: 32px;
-            color: #FFD700;
-            font-weight: bold;
-            margin-left: 10px;
-        }
+.hero-unit {
+    font-size: 32px;
+    color: #FFD700;
+    margin-left: 10px;
+}
 
-        .diff-tag {
+/* DIFF */
+.diff-tag {
     font-size: 28px;
-    font-weight: bold;
     margin-top: 15px;
-    display: inline-block;
     padding: 8px 35px;
-    background-color: #000000;
+    background-color: #000;
     border-radius: 50px;
-    border: 2px solid #FFD700;
-
-    text-shadow: 1px 1px 0 #000;
+    border: 3px solid #FFD700;
 }
 
-        /* รายละเอียดฝั่งขวา */
-        .asso-card {
-    background-color: #000000;
+/* RIGHT */
+.asso-card {
+    background-color: #000;
     border: 3px solid #FFD700;
     border-radius: 15px;
     padding: 20px;
     margin-bottom: 20px;
-
-    box-shadow: 0 0 10px rgba(0,0,0,0.5);
 }
 
-        .asso-label {
-            font-size: 24px;
-            color: #CCCCCC;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
+.asso-label { font-size: 24px; color: #CCC; }
+.asso-price { font-size: 60px; color: #FFD700; }
 
-        .asso-price {
-            font-size: 50px;
-            color: #FFD700;
-            font-weight: bold;
-        }
-
-        /* Footer & Status */
-        .status-footer {
-            margin-top: 10px;
-            font-size: 18px;
-            font-weight: bold;
-            color: #FFD700;
-        }
-
-        .clock-display {
-            font-size: 24px;
-            color: #FFFFFF;
-            margin-bottom: 5px;
-        }
-
-        .sync-info {
-            font-size: 14px;
-            color: #00FF00;
-            margin-top: 5px;
-        }
-
-        .refresh-btn {
-    background-color: #FFD700;
-    color: #000000;
-    border: 2px solid #000;
-    padding: 10px 30px;
+/* STATUS */
+.status-footer {
+    margin-top: 10px;
     font-size: 18px;
+}
+
+.clock-display { font-size: 24px; }
+
+.refresh-btn {
+    background-color: #FFD700;
+    color: #000;
+    border: 2px solid #000;
+    padding: 12px 40px;
+    font-size: 22px;
     font-weight: bold;
     border-radius: 10px;
-    cursor: pointer;
     margin-top: 10px;
-
-    box-shadow: 2px 2px 0 #000;
 }
 
-        .price-up { color: #00FF66; }
-        .price-down { color: #FF4444; }
-        .price-equal { color: #FFFFFF; }
-
-        /* Hidden Log */
-        #debug-log { display: none; }
-    </style>
+.price-up { color: #00FF66; }
+.price-down { color: #FF4444; }
+.price-equal { color: #FFFFFF; }
+</style>
 </head>
+
 <body>
-    <div class="main-table">
-        <div class="main-row">
-            <!-- คอลัมน์ซ้าย: โลโก้ และ ราคาขายหน้าร้าน -->
-            <div class="left-col">
-                <div class="shop-header">
-                    <img src="logo_no_bg.png" alt="ALONGKORN" class="shop-logo">
-                    <div class="shop-name">ร้านทองอลงกรณ์</div>
-                </div>
 
-                <div class="price-hero-container">
-                    <div class="hero-label">ราคาขายออกหน้าร้าน (รวมกำเหน็จ)</div>
-                    <div>
-                        <span id="shop-sell" class="hero-price">---</span>
-                        <span class="hero-unit">บาท</span>
-                    </div>
-                    <div id="diff-info" class="diff-tag">รอข้อมูล...</div>
-                </div>
+<div class="main-table">
+<div class="main-row">
 
-                <div id="update-info" style="font-size: 20px; color: #BBB; margin-top: 10px;"></div>
-                <div id="time-ago-info" style="font-size: 18px; color: #888;"></div>
-            </div>
+<div class="left-col">
+<div class="shop-header">
+<img src="logo_no_bg.png" class="shop-logo">
+<div class="shop-name">ร้านทองอลงกรณ์</div>
+</div>
 
-            <!-- คอลัมน์ขวา: ราคาสมาคมฯ และ สถานะ -->
-            <div class="right-col">
-                <div class="asso-card">
-                    <div class="asso-label">สมาคมฯ รับซื้อ</div>
-                    <div id="asso-buy" class="asso-price">---</div>
-                </div>
+<div class="hero-label">ราคาขายออกหน้าร้าน (รวมกำเหน็จ)</div>
 
-                <div class="asso-card">
-                    <div class="asso-label">สมาคมฯ ขายออก</div>
-                    <div id="asso-sell" class="asso-price">---</div>
-                </div>
+<div>
+<span id="shop-sell" class="hero-price">---</span>
+<span class="hero-unit">บาท</span>
+</div>
 
-                <div class="status-footer">
-                    <div id="clock" class="clock-display">---</div>
-                    <div id="sync-status">🟢 เชื่อมต่อปกติ</div>
-                    <div id="heartbeat-text" style="font-size: 14px; color: #888; margin-top: 5px;"></div>
-                    <button class="refresh-btn" onclick="location.reload();">⟳ REFRESH</button>
-                </div>
-            </div>
-        </div>
-    </div>
+<div id="diff-info" class="diff-tag">รอข้อมูล...</div>
 
-    <script type="text/javascript">
-        // ฟังก์ชันฟอร์แมตตัวเลข (Legacy JS)
-        function formatNumber(num) {
-            if (!num) return '---';
-            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-        }
+<div id="update-info" style="margin-top:10px;"></div>
 
-        // อัปเดตนาฬิกา
-        function updateClock() {
-            var now = new Date();
-            var h = now.getHours(), m = now.getMinutes(), s = now.getSeconds();
-            h = h < 10 ? '0'+h : h; m = m < 10 ? '0'+m : m; s = s < 10 ? '0'+s : s;
-            document.getElementById('clock').innerHTML = h + ':' + m + ':' + s + ' น.';
-        }
+</div>
 
-        // ระบบ Real-time Fetch
-        var fetchTimer = 10;
-        var openingData = null;
+<div class="right-col">
 
-        function updateHeartbeat() {
-            fetchTimer--;
-            if (fetchTimer <= 0) {
-                fetchTimer = 10;
-                fetchData();
-            }
-            document.getElementById('heartbeat-text').innerText = 'ตรวจราคาอีกครั้งใน ' + fetchTimer + ' วินาที';
-        }
+<div class="asso-card">
+<div class="asso-label">สมาคมฯ รับซื้อ</div>
+<div id="asso-buy" class="asso-price">---</div>
+</div>
 
-        function fetchData() {
-            // 1. ดึงราคาทองเปิดตลาด (ดึงครั้งเดียวหรือดึงซ้ำเพื่อความชัวร์)
-            var openingXhr = new XMLHttpRequest();
-            openingXhr.open('GET', './daily_opening.json?v=' + new Date().getTime(), true);
-            openingXhr.onreadystatechange = function() {
-                if (openingXhr.readyState === 4 && openingXhr.status === 200) {
-                    try { openingData = JSON.parse(openingXhr.responseText); } catch (e) {}
-                }
-            };
-            openingXhr.send();
+<div class="asso-card">
+<div class="asso-label">สมาคมฯ ขายออก</div>
+<div id="asso-sell" class="asso-price">---</div>
+</div>
 
-            // 2. ดึงราคาทองล่าสุด
-            var xhr = new XMLHttpRequest();
-            xhr.open('GET', './latest_gold.json?v=' + new Date().getTime(), true);
-            xhr.onreadystatechange = function() {
-                if (xhr.readyState === 4 && xhr.status === 200) {
-                    try { renderData(JSON.parse(xhr.responseText)); } catch (e) {}
-                }
-            };
-            xhr.send();
+<div class="status-footer">
+<div id="clock" class="clock-display"></div>
 
-            // 3. ดึงสถานะเชื่อมต่อ (Sync Status)
-            var syncXhr = new XMLHttpRequest();
-            syncXhr.open('GET', './last_sync.json?v=' + new Date().getTime(), true);
-            syncXhr.onreadystatechange = function() {
-                if (syncXhr.readyState === 4 && syncXhr.status === 200) {
-                    try {
-                        var s = JSON.parse(syncXhr.responseText);
-                        var lastSyncDate = new Date(s.last_sync);
-                        var timeStr = lastSyncDate.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
-                        document.getElementById('sync-status').innerHTML = '<span style="color:#00FF00;">●</span> เชื่อมต่อล่าสุด: ' + timeStr + ' น.';
-                    } catch (e) {
-                        document.getElementById('sync-status').innerHTML = '<span style="color:#FFD700;">●</span> กำลังรอข้อมูล...';
-                    }
-                } else if (syncXhr.readyState === 4 && syncXhr.status !== 200) {
-                    document.getElementById('sync-status').innerHTML =  '<span style="color:#FF0000;">●</span> ไม่สามารถดึงสถานะล่าสุดได้';
-                }
-            };
-            syncXhr.send();
-        }
+<div id="sync-status"></div>
 
-        function renderData(data) {
-            if (data.status === 'success') {
-                var res = data.response;
-                var prices = res.price.gold_bar;
-                var buy = parseFloat(prices.buy.replace(/,/g, ''));
-                var sell = parseFloat(prices.sell.replace(/,/g, ''));
-                var shopSale = sell + 1450;
-                
-                document.getElementById('asso-buy').innerText = formatNumber(buy);
-                document.getElementById('asso-sell').innerText = formatNumber(sell);
-                document.getElementById('shop-sell').innerText = formatNumber(shopSale);
-                
-                // คำนวณส่วนต่างจากราคาเปิดตลาด
-                var diffEl = document.getElementById('diff-info');
-                if (openingData && openingData.response) {
-                    var openSell = parseFloat(openingData.response.price.gold_bar.sell.replace(/,/g, ''));
-                    var currentSell = sell;
-                    var diffValue = currentSell - openSell;
-                    
-                    if (diffValue > 0) {
-                        diffEl.innerHTML = '<span class="price-up">▲ วันนี้ขึ้น ' + formatNumber(diffValue) + ' บาท</span>';
-                    } else if (diffValue < 0) {
-                        diffEl.innerHTML = '<span class="price-down">▼ วันนี้ลง ' + formatNumber(Math.abs(diffValue)) + ' บาท</span>';
-                    } else {
-                        diffEl.innerHTML = '<span class="price-equal">- ราคาเท่าตอนเปิดตลาด -</span>';
-                    }
-                } else {
-                    diffEl.innerHTML = '<span class="price-equal">- กำลังคำนวณส่วนต่าง... -</span>';
-                }
+<button class="refresh-btn" onclick="location.reload();">⟳ REFRESH</button>
+</div>
 
-                document.getElementById('update-info').innerHTML = 'สมาคมอัปเดต: ' + res.update_time;
-                calculateTimeAgo(res.update_time);
-            }
-        }
+</div>
 
-        var lastTime = "";
-        function calculateTimeAgo(timeStr) {
-            if (timeStr) lastTime = timeStr;
-            if (!lastTime) return;
-            var now = new Date();
-            var m = lastTime.match(/(\d{1,2})[:.](\d{1,2})/);
-            if (!m) return;
-            var h = parseInt(m[1], 10), mi = parseInt(m[2], 10);
-            var d = new Date(now.getTime()); d.setHours(h, mi, 0, 0);
-            if (d > now) d.setDate(d.getDate() - 1);
-            var diffMs = now.getTime() - d.getTime();
-            var diff = Math.floor(diffMs / 60000);
-            var el = document.getElementById('time-ago-info');
-            if (diff < 1) el.innerText = 'อัปเดตเมื่อครู่นี้';
-            else el.innerText = 'อัปเดตเมื่อ ' + diff + ' นาทีที่แล้ว';
-        }
+</div>
+</div>
 
-        // เริ่มต้นการทำงาน
-        if (!window._init) {
-    window._init = true;
-    setInterval(updateClock, 1000);
-    setInterval(updateHeartbeat, 1000);
+<script>
+function formatNumber(num){
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g,",");
 }
-        fetchData();
-    </script>
+
+function updateClock(){
+    var d=new Date();
+    var h=d.getHours(),m=d.getMinutes(),s=d.getSeconds();
+    h=h<10?'0'+h:h;
+    m=m<10?'0'+m:m;
+    s=s<10?'0'+s:s;
+    document.getElementById('clock').innerHTML=h+':'+m+':'+s+' น.';
+}
+setInterval(updateClock,1000);
+updateClock();
+
+function fetchData(){
+    var xhr=new XMLHttpRequest();
+    xhr.open('GET','latest_gold.json?v='+new Date().getTime(),true);
+    xhr.onreadystatechange=function(){
+        if(xhr.readyState==4 && xhr.status==200){
+            var data=JSON.parse(xhr.responseText);
+            var res=data.response;
+
+            var buy=parseFloat(res.price.gold_bar.buy.replace(/,/g,''));
+            var sell=parseFloat(res.price.gold_bar.sell.replace(/,/g,''));
+            var shop=sell+1450;
+
+            document.getElementById('asso-buy').innerText=formatNumber(buy);
+            document.getElementById('asso-sell').innerText=formatNumber(sell);
+            document.getElementById('shop-sell').innerText=formatNumber(shop);
+
+            var cleanTime = res.update_time.replace('เวลา ', '');
+
+            document.getElementById('update-info').innerHTML =
+              'อัปเดต: ' + res.update_date + ' ' + cleanTime;
+
+            var now=new Date();
+            var h=now.getHours(),m=now.getMinutes();
+            h=h<10?'0'+h:h;
+            m=m<10?'0'+m:m;
+
+            document.getElementById('sync-status').innerHTML=
+              '<span style="color:#00FF00;">●</span> เชื่อมต่อล่าสุด '+h+':'+m+' น.';
+        }
+    };
+    xhr.send();
+}
+
+setInterval(fetchData,10000);
+fetchData();
+</script>
+
 </body>
 </html>
