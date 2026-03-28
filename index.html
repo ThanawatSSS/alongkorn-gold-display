@@ -223,7 +223,7 @@
                     <div id="clock" class="clock-display">---</div>
                     <div id="sync-status">🟢 เชื่อมต่อปกติ</div>
                     <div id="heartbeat-text" style="font-size: 14px; color: #888; margin-top: 5px;"></div>
-                    <button class="refresh-btn" onclick="location.reload();">🔄 REFRESH</button>
+                    <button class="refresh-btn" onclick="location.reload();">⟳ REFRESH</button>
                 </div>
             </div>
         </div>
@@ -287,12 +287,12 @@
                         var s = JSON.parse(syncXhr.responseText);
                         var lastSyncDate = new Date(s.last_sync);
                         var timeStr = lastSyncDate.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
-                        document.getElementById('sync-status').innerHTML = '🟢 เชื่อมต่อล่าสุด: ' + timeStr + ' น.';
+                        document.getElementById('sync-status').innerHTML = '<span style="color:#00FF00;">●</span> เชื่อมต่อล่าสุด: ' + timeStr + ' น.';
                     } catch (e) {
-                        document.getElementById('sync-status').innerText = '🟡 กำลังรอข้อมูลใหม่...';
+                        document.getElementById('sync-status').innerHTML = '<span style="color:#FFD700;">●</span> กำลังรอข้อมูล...';
                     }
                 } else if (syncXhr.readyState === 4 && syncXhr.status !== 200) {
-                    document.getElementById('sync-status').innerText = '🔴 ไม่สามารถดึงสถานะล่าสุดได้';
+                    document.getElementById('sync-status').innerHTML =  '<span style="color:#FF0000;">●</span> ไม่สามารถดึงสถานะล่าสุดได้';
                 }
             };
             syncXhr.send();
