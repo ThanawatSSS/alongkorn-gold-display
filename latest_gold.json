@@ -1,16 +1,16 @@
 {
   "status": "success",
   "response": {
-    "update_date": "01/04/2569",
-    "update_time": "เวลา 12:48 น. (ครั้งที่ 14)",
+    "update_date": "",
+    "update_time": "",
     "price": {
       "gold": {
-        "buy": "70,948.80",
-        "sell": "73,400.00"
+        "buy": "",
+        "sell": ""
       },
       "gold_bar": {
-        "buy": "72,400.00",
-        "sell": "72,600.00"
+        "buy": "",
+        "sell": ""
       }
     }
   }
