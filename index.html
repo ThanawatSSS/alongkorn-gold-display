@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="th">
 <head>
 <meta charset="UTF-8">
@@ -38,24 +39,24 @@ body {
 .left-col {
     display: table-cell;
     vertical-align: middle;
-    width: 60%;
+    width: 50%;
     background-color: #4A0000;
     border: 5px solid #FFD700;
     border-radius: 20px;
-    padding: 10px 20px;
+    padding: 15px 25px;
 }
 
 .right-col {
     display: table-cell;
     vertical-align: middle;
-    width: 40%;
+    width: 50%;
 }
 
 /* HEADER */
 .shop-header {
     border-bottom: 2px solid #FFD700;
-    padding-bottom: 5px;
-    margin-bottom: 10px;
+    padding-bottom: 8px;
+    margin-bottom: 15px;
 }
 
 .shop-logo {
@@ -73,35 +74,22 @@ body {
     vertical-align: middle;
 }
 
-/* HERO */
-.hero-label {
-    font-size: 28px;
-    margin-bottom: 10px;
-    font-weight: bold;
-}
-
-.hero-price {
-    font-size: 110px;
-    color: #FFD700;
-    font-weight: bold;
-    line-height: 1;
-    text-shadow: 4px 4px 0 #000;
-}
-
-.hero-unit {
-    font-size: 32px;
-    color: #FFD700;
-    margin-left: 10px;
-}
-
 /* DIFF */
 .diff-tag {
-    font-size: 28px;
-    margin-top: 15px;
-    padding: 8px 35px;
+    font-size: 30px;
+    margin-top: 10px;
+    padding: 10px 35px;
     background-color: #000;
     border-radius: 50px;
     border: 3px solid #FFD700;
+    display: inline-block;
+}
+
+/* UPDATE INFO */
+#update-info {
+    margin-top: 12px;
+    font-size: 20px;
+    color: #CCC;
 }
 
 /* RIGHT */
@@ -109,20 +97,37 @@ body {
     background-color: #000;
     border: 3px solid #FFD700;
     border-radius: 15px;
-    padding: 20px;
-    margin-bottom: 20px;
+    padding: 22px 28px;
+    margin-bottom: 18px;
 }
 
-.asso-label { font-size: 24px; color: #CCC; }
-.asso-price { font-size: 60px; color: #FFD700; }
+.asso-label {
+    font-size: 28px;
+    color: #CCC;
+    margin-bottom: 4px;
+}
+
+.asso-price {
+    font-size: 90px;
+    color: #FFD700;
+    font-weight: bold;
+    line-height: 1;
+    text-shadow: 3px 3px 0 #000;
+}
+
+.asso-unit {
+    font-size: 26px;
+    color: #FFD700;
+    margin-left: 6px;
+}
 
 /* STATUS */
 .status-footer {
-    margin-top: 10px;
+    margin-top: 5px;
     font-size: 18px;
 }
 
-.clock-display { font-size: 24px; }
+.clock-display { font-size: 26px; margin-bottom: 6px; }
 
 .refresh-btn {
     background-color: #FFD700;
@@ -135,10 +140,11 @@ body {
     margin-top: 10px;
 }
 
-.price-up { color: #00FF66; }
-.price-down { color: #FF4444; }
+.price-up    { color: #00FF66; }
+.price-down  { color: #FF4444; }
 .price-equal { color: #FFFFFF; }
 </style>
+
 </head>
 
 <body>
@@ -146,44 +152,49 @@ body {
 <div class="main-table">
 <div class="main-row">
 
+<!-- LEFT: logo + diff + update -->
+
 <div class="left-col">
-<div class="shop-header">
-<img src="logo_no_bg.png" class="shop-logo">
-<div class="shop-name">ร้านทองอลงกรณ์</div>
-</div>
+    <div class="shop-header">
+        <img src="logo_no_bg.png" class="shop-logo">
+        <div class="shop-name">ร้านทองอลงกรณ์</div>
+    </div>
 
-<div class="hero-label">ราคาขายออกหน้าร้าน (รวมกำเหน็จ)</div>
-
-<div>
-<span id="shop-sell" class="hero-price">---</span>
-<span class="hero-unit">บาท</span>
-</div>
-
+```
 <div id="diff-info" class="diff-tag">รอข้อมูล...</div>
 
-<div id="update-info" style="margin-top:10px;"></div>
+<div id="update-info"></div>
+```
 
 </div>
+
+<!-- RIGHT: asso prices + clock -->
 
 <div class="right-col">
 
+```
 <div class="asso-card">
-<div class="asso-label">สมาคมฯ รับซื้อ</div>
-<div id="asso-buy" class="asso-price">---</div>
+    <div class="asso-label">สมาคมฯ รับซื้อ</div>
+    <div>
+        <span id="asso-buy" class="asso-price">---</span>
+        <span class="asso-unit">บาท</span>
+    </div>
 </div>
 
 <div class="asso-card">
-<div class="asso-label">สมาคมฯ ขายออก</div>
-<div id="asso-sell" class="asso-price">---</div>
+    <div class="asso-label">สมาคมฯ ขายออก</div>
+    <div>
+        <span id="asso-sell" class="asso-price">---</span>
+        <span class="asso-unit">บาท</span>
+    </div>
 </div>
 
 <div class="status-footer">
-<div id="clock" class="clock-display"></div>
-
-<div id="sync-status"></div>
-
-<button class="refresh-btn" onclick="location.reload();">⟳ REFRESH</button>
+    <div id="clock" class="clock-display"></div>
+    <div id="sync-status"></div>
+    <button class="refresh-btn" onclick="location.reload();">⟳ REFRESH</button>
 </div>
+```
 
 </div>
 
@@ -206,7 +217,7 @@ function updateClock(){
 setInterval(updateClock,1000);
 updateClock();
 
-/* 🔥 state กลาง */
+/* state กลาง */
 var latestData = null;
 var openingData = null;
 
@@ -230,20 +241,18 @@ function tryRender(){
 
     var res = latestData.response;
 
-    var buy = parseFloat(res.price.gold_bar.buy.replace(/,/g,''));
+    var buy  = parseFloat(res.price.gold_bar.buy.replace(/,/g,''));
     var sell = parseFloat(res.price.gold_bar.sell.replace(/,/g,''));
-    var shop = sell + 1450;
 
-    document.getElementById('asso-buy').innerText = formatNumber(buy);
+    document.getElementById('asso-buy').innerText  = formatNumber(buy);
     document.getElementById('asso-sell').innerText = formatNumber(sell);
-    document.getElementById('shop-sell').innerText = formatNumber(shop);
 
     /* date + time */
     var cleanTime = res.update_time.replace('เวลา ', '');
     document.getElementById('update-info').innerHTML =
       'อัปเดต: ' + res.update_date + ' ' + cleanTime;
 
-    /* 🔥 diff */
+    /* diff */
     var openSell = parseFloat(openingData.response.price.gold_bar.sell.replace(/,/g,''));
     var diff = sell - openSell;
 
@@ -256,7 +265,7 @@ function tryRender(){
         diffEl.innerHTML = '<span class="price-down">▼ วันนี้ลง ' + formatNumber(Math.abs(diff)) + ' บาท</span>';
     }
     else{
-        diffEl.innerHTML = '<span class="price-equal">- ราคาเท่าตอนเปิดตลาด -</span>';
+        diffEl.innerHTML = '<span class="price-equal">— ราคาเท่าตอนเปิดตลาด —</span>';
     }
 
     /* sync status */
