@@ -18,8 +18,8 @@ html, body {
 }
 
 body {
-    background-color: #800000;
-    background-image: linear-gradient(#800000, #5a0000);
+    background-color: #3b0000;
+    background-image: linear-gradient(135deg, #4A0000, #1a0000);
     color: #FFFFFF;
     font-family: Arial, Helvetica, Tahoma, sans-serif;
     display: flex;
@@ -27,117 +27,154 @@ body {
     justify-content: center;
 }
 
-.main-table {
-    display: table;
-    width: 100%;
-    height: 100%;
-    border-spacing: 10px 5px;
+.container {
+    display: flex;
+    width: 95%;
+    max-width: 1800px;
+    height: 90%;
+    gap: 40px;
+    padding: 20px;
 }
 
-.main-row { display: table-row; }
-
+/* LEFT COLUMN */
 .left-col {
-    display: table-cell;
-    vertical-align: middle;
-    width: 50%;
-    background-color: #4A0000;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.4);
     border: 5px solid #FFD700;
-    border-radius: 20px;
-    padding: 15px 25px;
+    border-radius: 30px;
+    padding: 40px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+    text-align: center;
 }
 
-.right-col {
-    display: table-cell;
-    vertical-align: middle;
-    width: 50%;
-}
-
-/* HEADER */
 .shop-header {
-    border-bottom: 2px solid #FFD700;
-    padding-bottom: 8px;
-    margin-bottom: 15px;
+    margin-bottom: 25px;
 }
 
 .shop-logo {
-    width: 100px;
-    height: 100px;
+    width: 140px;
+    height: 140px;
     vertical-align: middle;
+    margin-bottom: 15px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .shop-name {
-    display: inline-block;
-    font-size: 44px;
+    font-size: 52px;
     color: #FFD700;
     font-weight: bold;
-    margin-left: 15px;
-    vertical-align: middle;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
 }
 
 /* DIFF */
 .diff-tag {
-    font-size: 30px;
-    margin-top: 10px;
-    padding: 10px 35px;
+    font-size: 34px;
+    margin-top: 15px;
+    padding: 15px 45px;
     background-color: #000;
     border-radius: 50px;
     border: 3px solid #FFD700;
     display: inline-block;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.4);
 }
 
 /* UPDATE INFO */
 #update-info {
-    margin-top: 12px;
-    font-size: 20px;
-    color: #CCC;
+    margin-top: 30px;
+    font-size: 24px;
+    color: #DDDDDD;
 }
 
-/* RIGHT */
+/* RIGHT COLUMN */
+.right-col {
+    flex: 1.2;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 30px;
+}
+
 .asso-card {
-    background-color: #000;
-    border: 3px solid #FFD700;
-    border-radius: 15px;
-    padding: 22px 28px;
-    margin-bottom: 18px;
+    background-color: rgba(0, 0, 0, 0.5);
+    border: 4px solid #FFD700;
+    border-radius: 25px;
+    padding: 35px 45px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 .asso-label {
-    font-size: 28px;
-    color: #CCC;
-    margin-bottom: 4px;
+    font-size: 32px;
+    color: #DDDDDD;
+    margin-bottom: 10px;
+}
+
+.price-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: flex-start;
 }
 
 .asso-price {
-    font-size: 90px;
+    font-size: 110px;
     color: #FFD700;
     font-weight: bold;
     line-height: 1;
-    text-shadow: 3px 3px 0 #000;
+    text-shadow: 4px 4px 6px rgba(0,0,0,0.8);
 }
 
 .asso-unit {
-    font-size: 26px;
+    font-size: 34px;
     color: #FFD700;
-    margin-left: 6px;
+    margin-left: 15px;
 }
 
-/* STATUS */
+/* STATUS FOOTER */
 .status-footer {
-    margin-top: 5px;
-    font-size: 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: rgba(0,0,0,0.3);
+    padding: 20px 30px;
+    border-radius: 20px;
+    margin-top: 10px;
 }
 
-.clock-display { font-size: 26px; margin-bottom: 6px; }
+.clock-sync {
+    display: flex;
+    flex-direction: column;
+}
+
+.clock-display { 
+    font-size: 32px; 
+    font-weight: bold;
+    margin-bottom: 8px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.6);
+}
+
+#sync-status {
+    font-size: 20px;
+    color: #CCCCCC;
+}
 
 .refresh-btn {
     background-color: #FFD700;
     color: #000;
-    border: 2px solid #000;
-    padding: 12px 40px;
-    font-size: 22px;
+    border: none;
+    padding: 15px 45px;
+    font-size: 24px;
     font-weight: bold;
-    border-radius: 10px;
-    margin-top: 10px;
+    border-radius: 15px;
+    cursor: pointer;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.4);
 }
 
 .price-up    { color: #00FF66; }
@@ -149,56 +186,49 @@ body {
 
 <body>
 
-<div class="main-table">
-<div class="main-row">
+<div class="container">
 
-<!-- LEFT: logo + diff + update -->
+    <!-- LEFT: logo + diff + update -->
+    <div class="left-col">
+        <div class="shop-header">
+            <img src="logo_no_bg.png" class="shop-logo" alt="Logo">
+            <div class="shop-name">ร้านทองอลงกรณ์</div>
+        </div>
 
-<div class="left-col">
-    <div class="shop-header">
-        <img src="logo_no_bg.png" class="shop-logo">
-        <div class="shop-name">ร้านทองอลงกรณ์</div>
+        <div id="diff-info" class="diff-tag">รอข้อมูล...</div>
+
+        <div id="update-info"></div>
     </div>
 
-```
-<div id="diff-info" class="diff-tag">รอข้อมูล...</div>
+    <!-- RIGHT: asso prices + clock -->
+    <div class="right-col">
 
-<div id="update-info"></div>
-```
+        <div class="asso-card">
+            <div class="asso-label">สมาคมฯ รับซื้อ</div>
+            <div class="price-row">
+                <span id="asso-buy" class="asso-price">---</span>
+                <span class="asso-unit">บาท</span>
+            </div>
+        </div>
 
-</div>
+        <div class="asso-card">
+            <div class="asso-label">สมาคมฯ ขายออก</div>
+            <div class="price-row">
+                <span id="asso-sell" class="asso-price">---</span>
+                <span class="asso-unit">บาท</span>
+            </div>
+        </div>
 
-<!-- RIGHT: asso prices + clock -->
+        <div class="status-footer">
+            <div class="clock-sync">
+                <div id="clock" class="clock-display"></div>
+                <div id="sync-status"></div>
+            </div>
+            <button class="refresh-btn" onclick="location.reload();">⟳ REFRESH</button>
+        </div>
 
-<div class="right-col">
-
-```
-<div class="asso-card">
-    <div class="asso-label">สมาคมฯ รับซื้อ</div>
-    <div>
-        <span id="asso-buy" class="asso-price">---</span>
-        <span class="asso-unit">บาท</span>
     </div>
-</div>
 
-<div class="asso-card">
-    <div class="asso-label">สมาคมฯ ขายออก</div>
-    <div>
-        <span id="asso-sell" class="asso-price">---</span>
-        <span class="asso-unit">บาท</span>
-    </div>
-</div>
-
-<div class="status-footer">
-    <div id="clock" class="clock-display"></div>
-    <div id="sync-status"></div>
-    <button class="refresh-btn" onclick="location.reload();">⟳ REFRESH</button>
-</div>
-```
-
-</div>
-
-</div>
 </div>
 
 <script>

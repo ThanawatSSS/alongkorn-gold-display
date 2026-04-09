@@ -87,6 +87,7 @@ jobs:
           if final:
               # ✅ เช็คว่า update_time ซ้ำไหม
               new_time = final["response"]["update_time"]
+              new_date = final["response"]["update_date"]
 
               old_time = None
               if os.path.exists("latest_gold.json"):
@@ -102,17 +103,34 @@ jobs:
               else:
                   with open("latest_gold.json", "w", encoding="utf-8") as f:
                       json.dump(final, f, ensure_ascii=False, indent=2)
-                  print("Updated file")
+                  print("Updated latest_gold.json")
+
+                  # ✅ เช็คว่าเป็นข้อมูลเปิดตลาดครั้งที่ 1 ของวัน หรือข้ามวันใหม่
+                  is_first_of_day = "(ครั้งที่ 1)" in new_time
+                  daily_old_date = None
+                  
+                  if os.path.exists("daily_opening.json"):
+                      with open("daily_opening.json", "r", encoding="utf-8") as f:
+                          try:
+                              daily_old = json.load(f)
+                              daily_old_date = daily_old["response"]["update_date"]
+                          except:
+                              pass
+                              
+                  if is_first_of_day or new_date != daily_old_date:
+                      with open("daily_opening.json", "w", encoding="utf-8") as f:
+                          json.dump(final, f, ensure_ascii=False, indent=2)
+                      print("Updated daily_opening.json")
           EOF
 
       - name: Commit if changed
         run: |
-          if [[ -n $(git status --porcelain latest_gold.json) ]]; then
-            git config user.name "github-actions"
-            git config user.email "action@github.com"
-            git add latest_gold.json
+          git config user.name "github-actions"
+          git config user.email "action@github.com"
+          git add latest_gold.json daily_opening.json || true
+          if git diff --cached --quiet; then
+            echo "No change"
+          else
             git commit -m "Update gold price $(date +'%H:%M')"
             git push
-          else
-            echo "No change"
           fi
