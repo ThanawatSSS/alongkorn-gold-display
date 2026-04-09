@@ -29,44 +29,45 @@ body {
 
 .container {
     display: flex;
-    width: 95%;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    width: 96%;
     max-width: 1800px;
-    height: 90%;
-    gap: 40px;
-    padding: 20px;
+    height: 94%;
 }
 
 /* LEFT COLUMN */
 .left-col {
-    flex: 1;
+    width: 48%;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     background-color: rgba(0, 0, 0, 0.4);
     border: 5px solid #FFD700;
-    border-radius: 30px;
-    padding: 40px;
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+    border-radius: 25px;
+    padding: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
     text-align: center;
 }
 
 .shop-header {
-    margin-bottom: 25px;
+    margin-bottom: 20px;
 }
 
 .shop-logo {
-    width: 140px;
-    height: 140px;
+    width: 120px;
+    height: 120px;
     vertical-align: middle;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
     display: block;
     margin-left: auto;
     margin-right: auto;
 }
 
 .shop-name {
-    font-size: 52px;
+    font-size: 42px;
     color: #FFD700;
     font-weight: bold;
     text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
@@ -74,11 +75,11 @@ body {
 
 /* DIFF */
 .diff-tag {
-    font-size: 34px;
-    margin-top: 15px;
-    padding: 15px 45px;
+    font-size: 28px;
+    margin-top: 10px;
+    padding: 12px 35px;
     background-color: #000;
-    border-radius: 50px;
+    border-radius: 40px;
     border: 3px solid #FFD700;
     display: inline-block;
     box-shadow: 0 5px 15px rgba(0,0,0,0.4);
@@ -86,35 +87,35 @@ body {
 
 /* UPDATE INFO */
 #update-info {
-    margin-top: 30px;
-    font-size: 24px;
+    margin-top: 25px;
+    font-size: 20px;
     color: #DDDDDD;
 }
 
 /* RIGHT COLUMN */
 .right-col {
-    flex: 1.2;
+    width: 48%;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    gap: 30px;
 }
 
 .asso-card {
     background-color: rgba(0, 0, 0, 0.5);
     border: 4px solid #FFD700;
-    border-radius: 25px;
-    padding: 35px 45px;
+    border-radius: 20px;
+    padding: 20px 35px;
     box-shadow: 0 10px 25px rgba(0,0,0,0.5);
     display: flex;
     flex-direction: column;
     justify-content: center;
+    margin-bottom: 25px;
 }
 
 .asso-label {
-    font-size: 32px;
+    font-size: 26px;
     color: #DDDDDD;
-    margin-bottom: 10px;
+    margin-bottom: 5px;
 }
 
 .price-row {
@@ -124,7 +125,7 @@ body {
 }
 
 .asso-price {
-    font-size: 110px;
+    font-size: 90px;
     color: #FFD700;
     font-weight: bold;
     line-height: 1;
@@ -132,9 +133,9 @@ body {
 }
 
 .asso-unit {
-    font-size: 34px;
+    font-size: 28px;
     color: #FFD700;
-    margin-left: 15px;
+    margin-left: 10px;
 }
 
 /* STATUS FOOTER */
@@ -143,9 +144,8 @@ body {
     justify-content: space-between;
     align-items: center;
     background-color: rgba(0,0,0,0.3);
-    padding: 20px 30px;
+    padding: 15px 25px;
     border-radius: 20px;
-    margin-top: 10px;
 }
 
 .clock-sync {
@@ -154,14 +154,14 @@ body {
 }
 
 .clock-display { 
-    font-size: 32px; 
+    font-size: 28px; 
     font-weight: bold;
-    margin-bottom: 8px;
+    margin-bottom: 5px;
     text-shadow: 2px 2px 4px rgba(0,0,0,0.6);
 }
 
 #sync-status {
-    font-size: 20px;
+    font-size: 18px;
     color: #CCCCCC;
 }
 
@@ -169,10 +169,10 @@ body {
     background-color: #FFD700;
     color: #000;
     border: none;
-    padding: 15px 45px;
-    font-size: 24px;
+    padding: 12px 35px;
+    font-size: 22px;
     font-weight: bold;
-    border-radius: 15px;
+    border-radius: 12px;
     cursor: pointer;
     box-shadow: 0 5px 15px rgba(0,0,0,0.4);
 }
