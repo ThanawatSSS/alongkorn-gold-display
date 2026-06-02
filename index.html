@@ -249,7 +249,6 @@ updateClock();
 
 /* state กลาง */
 var latestData = null;
-var openingData = null;
 
 /* โหลด JSON */
 function fetchJSON(url, callback){
@@ -267,25 +266,29 @@ function fetchJSON(url, callback){
 
 /* render กลาง */
 function tryRender(){
-    if(!latestData || !openingData) return;
+    if(!latestData) return;
 
-    var res = latestData.response;
-
-    var buy  = parseFloat(res.price.gold_bar.buy.replace(/,/g,''));
-    var sell = parseFloat(res.price.gold_bar.sell.replace(/,/g,''));
+    var buy  = parseFloat(latestData.goldBar.buy);
+    var sell = parseFloat(latestData.goldBar.sell);
 
     document.getElementById('asso-buy').innerText  = formatNumber(buy);
     document.getElementById('asso-sell').innerText = formatNumber(sell);
 
     /* date + time */
-    var cleanTime = res.update_time.replace('เวลา ', '');
-    document.getElementById('update-info').innerHTML =
-      'อัปเดต: ' + res.update_date + ' ' + cleanTime;
+    var dateStr = '';
+    try {
+        var parts = latestData.asTime.split('T');
+        var dateParts = parts[0].split('-');
+        var timeParts = parts[1].split(':');
+        var BEYear = parseInt(dateParts[0]) + 543;
+        dateStr = dateParts[2] + '/' + dateParts[1] + '/' + BEYear + ' ' + timeParts[0] + ':' + timeParts[1] + ' น. (ครั้งที่ ' + latestData.seq + ')';
+    } catch(e) {
+        dateStr = latestData.asTime;
+    }
+    document.getElementById('update-info').innerHTML = 'อัปเดต: ' + dateStr;
 
     /* diff */
-    var openSell = parseFloat(openingData.response.price.gold_bar.sell.replace(/,/g,''));
-    var diff = sell - openSell;
-
+    var diff = (latestData.change && latestData.change.fromYesterday !== undefined) ? latestData.change.fromYesterday : 0;
     var diffEl = document.getElementById('diff-info');
 
     if(diff > 0){
@@ -295,7 +298,7 @@ function tryRender(){
         diffEl.innerHTML = '<span class="price-down">▼ วันนี้ลง ' + formatNumber(Math.abs(diff)) + ' บาท</span>';
     }
     else{
-        diffEl.innerHTML = '<span class="price-equal">— ราคาเท่าตอนเปิดตลาด —</span>';
+        diffEl.innerHTML = '<span class="price-equal">— ราคาเท่าเมื่อวาน —</span>';
     }
 
     /* sync status */
@@ -308,18 +311,12 @@ function tryRender(){
       '<span style="color:#00FF00;">●</span> เชื่อมต่อล่าสุด ' + h + ':' + m + ' น.';
 }
 
-/* fetch ทั้งสอง */
+/* fetch ข้อมูล */
 function fetchAll(){
     latestData = null;
-    openingData = null;
 
     fetchJSON('latest_gold.json', function(data){
         latestData = data;
-        tryRender();
-    });
-
-    fetchJSON('daily_opening.json', function(data){
-        openingData = data;
         tryRender();
     });
 }
