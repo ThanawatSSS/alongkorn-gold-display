@@ -264,16 +264,30 @@
         /* state กลาง */
         var latestData = null;
 
+        function showOfflineStatus() {
+            document.getElementById('sync-status').innerHTML =
+                '<span style="color:#FF4444;">●</span> ออฟไลน์ (ขาดการเชื่อมต่อกับเซิร์ฟเวอร์)';
+        }
+
         /* โหลด JSON */
-        function fetchJSON(url, callback) {
+        function fetchJSON(url, successCallback) {
             var xhr = new XMLHttpRequest();
             xhr.open('GET', url + '?v=' + new Date().getTime(), true);
             xhr.onreadystatechange = function () {
-                if (xhr.readyState === 4 && xhr.status === 200) {
-                    try {
-                        callback(JSON.parse(xhr.responseText));
-                    } catch (e) { }
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        try {
+                            successCallback(JSON.parse(xhr.responseText));
+                        } catch (e) {
+                            showOfflineStatus();
+                        }
+                    } else {
+                        showOfflineStatus();
+                    }
                 }
+            };
+            xhr.onerror = function () {
+                showOfflineStatus();
             };
             xhr.send();
         }
@@ -343,8 +357,28 @@
 
             var source = latestData.source || 'unknown';
             var sourceId = latestData.goldPriceID || '--';
-            document.getElementById('sync-status').innerHTML =
-                '<span style="color:#00FF00;">●</span> เชื่อมต่อล่าสุด ' + h + ':' + m + ' น. (แหล่งข้อมูล: ' + source + ' | ID: ' + sourceId + ')';
+
+            // Check if GAS data is stale (over 15 minutes)
+            var isStale = false;
+            if (latestData.generatedAt) {
+                try {
+                    var genTime = new Date(latestData.generatedAt);
+                    var diffMinutes = (now.getTime() - genTime.getTime()) / 60000;
+                    if (diffMinutes > 15) {
+                        isStale = true;
+                    }
+                } catch (err) {
+                    console.log('Error parsing generatedAt:', err);
+                }
+            }
+
+            if (isStale) {
+                document.getElementById('sync-status').innerHTML =
+                    '<span style="color:#FFCC00;">●</span> ข้อมูลล่าช้า (GAS ขัดข้อง) | ดึงล่าสุด ' + h + ':' + m + ' น.';
+            } else {
+                document.getElementById('sync-status').innerHTML =
+                    '<span style="color:#00FF00;">●</span> เชื่อมต่อล่าสุด ' + h + ':' + m + ' น. (แหล่งข้อมูล: ' + source + ' | ID: ' + sourceId + ')';
+            }
         }
 
         /* fetch ข้อมูล */
