@@ -21,7 +21,7 @@ jobs:
       - name: Fetch & Normalize
         run: |
           python3 << 'EOF'
-          import urllib.request, json, datetime, time, random, os
+          import urllib.request, urllib.error, json, datetime, time, random, os
 
           def fetch(url, headers):
               req = urllib.request.Request(url, headers=headers)
@@ -91,15 +91,27 @@ jobs:
           try:
               raw = fetch(
                   "https://www.goldtraders.or.th/api/GoldPrices/Latest",
-                  {"User-Agent": "Mozilla/5.0"}
+                  {
+                      "User-Agent": "Mozilla/5.0",
+                      "Accept": "application/json",
+                      "Referer": "https://www.goldtraders.or.th/"
+                  }
               )
               if validate_goldtraders(raw):
                   final = transform_goldtraders(raw)
                   print("Primary OK")
               else:
                   raise ValueError("Invalid goldtraders data structure/values")
+          except urllib.error.HTTPError as e:
+              print("Primary HTTPError:", e.code)
+              try:
+                  print("Primary Response Body:", e.read().decode("utf-8"))
+              except Exception as read_err:
+                  print("Could not read primary error body:", read_err)
           except Exception as e:
               print("Primary failed:", e)
+
+          if not final:
               try:
                   raw = fetch(
                       "https://api.chnwt.dev/thai-gold-api/latest",
@@ -110,6 +122,12 @@ jobs:
                       print("Fallback OK")
                   else:
                       raise ValueError("Invalid chnwt data structure/values")
+              except urllib.error.HTTPError as e2:
+                  print("Fallback HTTPError:", e2.code)
+                  try:
+                      print("Fallback Response Body:", e2.read().decode("utf-8"))
+                  except Exception as read_err:
+                      print("Could not read fallback error body:", read_err)
               except Exception as e2:
                   print("Fallback failed:", e2)
 
