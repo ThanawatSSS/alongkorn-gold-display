@@ -19,9 +19,21 @@
 
 เพื่อให้ระบบทำงานได้สมบูรณ์แบบบนทีวีรุ่นเก่า:
 
-1. **เปิดใช้งาน GitHub Pages:** ไปที่ `Settings > Pages` ของ Repository นี้ แล้วเลือก Branch `main`
-2. **ตั้งค่า Workflow:** ตรวจสอบไฟล์ใน `.github/workflows/update_gold.yml` ว่าทำงานปกติ (จะรันทุก 7 นาที)
-3. **การรันครั้งแรก:** ไปที่แท็บ `Actions` เลือก `Update Gold Price` แล้วกด `Run workflow` เพื่อสร้างไฟล์ราคาก้อนแรกออกมา
+1. **เปิดใช้งาน GitHub Pages:** ไปที่ `Settings > Pages` ของ Repository นี้ แล้วเลือก Branch `master`
+2. **ระบบอัปเดตราคา:** ปัจจุบันย้ายระบบดึงและอัปเดตราคาทองคำไปรันบน **Google Apps Script (GAS)** เพื่อหลีกเลี่ยงการติด Cloudflare 403 Challenge จากฝั่ง GitHub Actions
+
+---
+
+## ⏪ การย้อนกลับ (Rollback)
+
+หากวันใดเกิดปัญหากับระบบอัปเดตผ่าน GAS และต้องการย้อนกลับมาใช้ระบบ GitHub Actions ในการดึงราคาแบบเดิม สามารถตรวจสอบโค้ดหรือกู้คืนได้ทันที:
+
+- **ตรวจสอบโค้ดเดิมใน Branch สำรอง:**
+  ```bash
+  git checkout backup/github-actions-chnwt
+  ```
+- **หรือดึงโค้ด GitHub Actions กลับมาใช้ใน master:**
+  ใช้คำสั่ง `git cherry-pick` ดึง commit หรือก๊อปปี้ไฟล์ `.github/workflows/update_gold.yml` จาก branch สำรองกลับมาใช้งานได้ทันที
 
 ---
 
@@ -33,4 +45,3 @@
 - **API Developer GitHub:** [chnwt](https://github.com/chnwt)
 
 ---
-*พัฒนาโดย Antigravity (Google DeepMind Team)*
