@@ -36,6 +36,8 @@ jobs:
               thai_year = as_time.year + 543
               return {
                   "status": "success",
+                  "source": "goldtraders",
+                  "source_id": data["goldPriceID"],
                   "response": {
                       "update_date": as_time.strftime(f"%d/%m/{thai_year}"),
                       "update_time": f"เวลา {as_time.strftime('%H:%M')} น. (ครั้งที่ {data['seq']})",
@@ -55,8 +57,29 @@ jobs:
           def transform_chnwt(data):
               return {
                   "status": "success",
+                  "source": "chnwt",
+                  "source_id": None,
                   "response": data["response"]
               }
+
+          def validate_goldtraders(data):
+              return (
+                  data.get("goldPriceID") is not None and
+                  data.get("bL_BuyPrice") is not None and
+                  data.get("bL_SellPrice") is not None
+              )
+
+          def validate_chnwt(data):
+              try:
+                  buy = data["response"]["price"]["gold_bar"]["buy"]
+                  sell = data["response"]["price"]["gold_bar"]["sell"]
+
+                  return (
+                      buy not in ("", None) and
+                      sell not in ("", None)
+                  )
+              except:
+                  return False
 
           # ✅ random delay กัน bot detect
           delay = random.uniform(0.5, 1.5)
@@ -70,8 +93,11 @@ jobs:
                   "https://www.goldtraders.or.th/api/GoldPrices/Latest",
                   {"User-Agent": "Mozilla/5.0"}
               )
-              final = transform_goldtraders(raw)
-              print("Primary OK")
+              if validate_goldtraders(raw):
+                  final = transform_goldtraders(raw)
+                  print("Primary OK")
+              else:
+                  raise ValueError("Invalid goldtraders data structure/values")
           except Exception as e:
               print("Primary failed:", e)
               try:
@@ -79,8 +105,11 @@ jobs:
                       "https://api.chnwt.dev/thai-gold-api/latest",
                       {"User-Agent": "GoldBot/1.0"}
                   )
-                  final = transform_chnwt(raw)
-                  print("Fallback OK")
+                  if validate_chnwt(raw):
+                      final = transform_chnwt(raw)
+                      print("Fallback OK")
+                  else:
+                      raise ValueError("Invalid chnwt data structure/values")
               except Exception as e2:
                   print("Fallback failed:", e2)
 
