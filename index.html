@@ -197,7 +197,11 @@ body {
 
             <div id="diff-info" class="diff-tag">รอข้อมูล...</div>
 
-            <div id="update-info"></div>
+            <div id="prev-change-info" style="font-size: 20px; color: #EEEEEE; margin-top: 15px;">เทียบรอบก่อนหน้า: --</div>
+
+            <div id="update-info" style="margin-top: 20px;"></div>
+
+            <div id="exchange-info" style="font-size: 18px; color: #CCCCCC; margin-top: 15px;">อัตราแลกเปลี่ยน USD: --</div>
         </div>
 
         <!-- RIGHT: asso prices + clock -->
@@ -281,7 +285,10 @@ function tryRender(){
         var dateParts = parts[0].split('-');
         var timeParts = parts[1].split(':');
         var BEYear = parseInt(dateParts[0]) + 543;
-        dateStr = dateParts[2] + '/' + dateParts[1] + '/' + BEYear + ' ' + timeParts[0] + ':' + timeParts[1] + ' น. (ครั้งที่ ' + latestData.seq + ')';
+        var monthIndex = parseInt(dateParts[1], 10) - 1;
+        var thaiMonths = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
+        var monthName = thaiMonths[monthIndex] || dateParts[1];
+        dateStr = dateParts[2] + ' ' + monthName + ' ' + BEYear + ' เวลา ' + timeParts[0] + ':' + timeParts[1] + ' น. (ครั้งที่ ' + latestData.seq + ')';
     } catch(e) {
         dateStr = latestData.asTime;
     }
@@ -301,14 +308,33 @@ function tryRender(){
         diffEl.innerHTML = '<span class="price-equal">— ราคาเท่าเมื่อวาน —</span>';
     }
 
+    /* change from prev round */
+    var prevDiff = (latestData.change && latestData.change.fromPrevRound !== undefined) ? latestData.change.fromPrevRound : 0;
+    var prevEl = document.getElementById('prev-change-info');
+    if(prevDiff > 0){
+        prevEl.innerHTML = 'เทียบรอบก่อนหน้า: <span class="price-up">▲ ขึ้น ' + formatNumber(prevDiff) + ' บาท</span>';
+    }
+    else if(prevDiff < 0){
+        prevEl.innerHTML = 'เทียบรอบก่อนหน้า: <span class="price-down">▼ ลง ' + formatNumber(Math.abs(prevDiff)) + ' บาท</span>';
+    }
+    else{
+        prevEl.innerHTML = 'เทียบรอบก่อนหน้า: <span class="price-equal">— เท่าเดิม —</span>';
+    }
+
+    /* exchange rate */
+    var usdRate = (latestData.exchange && latestData.exchange.usdThb) ? latestData.exchange.usdThb : '--';
+    document.getElementById('exchange-info').innerText = 'อัตราแลกเปลี่ยน USD: ' + usdRate + ' บาท';
+
     /* sync status */
     var now = new Date();
     var h = now.getHours(), m = now.getMinutes();
     h = h < 10 ? '0'+h : h;
     m = m < 10 ? '0'+m : m;
 
+    var source = latestData.source || 'unknown';
+    var sourceId = latestData.goldPriceID || '--';
     document.getElementById('sync-status').innerHTML =
-      '<span style="color:#00FF00;">●</span> เชื่อมต่อล่าสุด ' + h + ':' + m + ' น.';
+      '<span style="color:#00FF00;">●</span> เชื่อมต่อล่าสุด ' + h + ':' + m + ' น. (แหล่งข้อมูล: ' + source + ' | ID: ' + sourceId + ')';
 }
 
 /* fetch ข้อมูล */
