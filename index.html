@@ -384,10 +384,12 @@
         }
 
         /* fetch ข้อมูล */
+        var GOLD_API_URL = 'https://script.google.com/macros/s/AKfycbypwZzF80kwA6H3YpZJ2mfomTL7Ml4V7G1Z1YuBHZDZX9Jj8zKYj_rhP29QsPMx3Twkug/exec';
+
         function fetchAll() {
             latestData = null;
 
-            fetchJSON('latest_gold.json', function (data) {
+            fetchJSON(GOLD_API_URL, function (data) {
                 latestData = data;
                 tryRender();
             });
