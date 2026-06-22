@@ -271,45 +271,27 @@
                 '<span style="color:#FF4444;">●</span> ออฟไลน์ (ขาดการเชื่อมต่อกับเซิร์ฟเวอร์)';
         }
 
-        /* โหลด JSON (ระบบ JSONP เพื่อรองรับทีวีรุ่นเก่าและเลี่ยง CORS) */
+        /* โหลด JSON */
         function fetchJSON(url, successCallback) {
-            var callbackName = 'jsonp_' + new Date().getTime() + '_' + Math.floor(Math.random() * 1000);
-            
-            window[callbackName] = function (data) {
-                try {
-                    successCallback(data);
-                } catch (e) {
-                    showOfflineStatus();
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', url + '?v=' + new Date().getTime(), true);
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        try {
+                            successCallback(JSON.parse(xhr.responseText));
+                        } catch (e) {
+                            showOfflineStatus();
+                        }
+                    } else {
+                        showOfflineStatus();
+                    }
                 }
-                // ล้างค่าหลังจากทำงานเสร็จ
-                try {
-                    delete window[callbackName];
-                    var scriptEl = document.getElementById(callbackName);
-                    if (scriptEl && scriptEl.parentNode) {
-                        scriptEl.parentNode.removeChild(scriptEl);
-                    }
-                } catch (err) {}
             };
-
-            var script = document.createElement('script');
-            script.id = callbackName;
-            
-            // แนบพารามิเตอร์ callback ไปที่ URL ของ Cloudflare
-            var separator = url.indexOf('?') >= 0 ? '&' : '?';
-            script.src = url + separator + 'callback=' + callbackName + '&_v=' + new Date().getTime();
-            
-            script.onerror = function () {
+            xhr.onerror = function () {
                 showOfflineStatus();
-                try {
-                    delete window[callbackName];
-                    var scriptEl = document.getElementById(callbackName);
-                    if (scriptEl && scriptEl.parentNode) {
-                        scriptEl.parentNode.removeChild(scriptEl);
-                    }
-                } catch (err) {}
             };
-
-            document.body.appendChild(script);
+            xhr.send();
         }
 
         /* render กลาง */
@@ -402,12 +384,10 @@
         }
 
         /* fetch ข้อมูล */
-        var GOLD_API_URL = 'https://alongkorn-gold-proxy.boomhothkub.workers.dev/';
-
         function fetchAll() {
             latestData = null;
 
-            fetchJSON(GOLD_API_URL, function (data) {
+            fetchJSON('latest_gold.json', function (data) {
                 latestData = data;
                 tryRender();
             });
