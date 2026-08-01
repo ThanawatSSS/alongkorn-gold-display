@@ -307,14 +307,26 @@
             /* date + time */
             var dateStr = '';
             try {
-                var parts = latestData.asTime.split('T');
-                var dateParts = parts[0].split('-');
-                var timeParts = parts[1].split(':');
-                var BEYear = parseInt(dateParts[0]) + 543;
-                var monthIndex = parseInt(dateParts[1], 10) - 1;
-                var thaiMonths = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
-                var monthName = thaiMonths[monthIndex] || dateParts[1];
-                dateStr = dateParts[2] + ' ' + monthName + ' ' + BEYear + ' เวลา ' + timeParts[0] + ':' + timeParts[1] + ' น. (ครั้งที่ ' + latestData.seq + ')';
+                var d = new Date(latestData.asTime);
+                if (!isNaN(d.getTime()) && (typeof latestData.asTime === 'string' && (latestData.asTime.indexOf('T') !== -1 || latestData.asTime.indexOf('Z') !== -1))) {
+                    var year = d.getFullYear() + 543;
+                    var monthIndex = d.getMonth();
+                    var thaiMonths = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
+                    var monthName = thaiMonths[monthIndex] || '';
+                    var day = d.getDate();
+                    var hours = d.getHours() < 10 ? '0' + d.getHours() : d.getHours();
+                    var minutes = d.getMinutes() < 10 ? '0' + d.getMinutes() : d.getMinutes();
+                    dateStr = day + ' ' + monthName + ' ' + year + ' เวลา ' + hours + ':' + minutes + ' น. (ครั้งที่ ' + latestData.seq + ')';
+                } else {
+                    var parts = latestData.asTime.split('T');
+                    var dateParts = parts[0].split('-');
+                    var timeParts = parts[1].split(':');
+                    var BEYear = parseInt(dateParts[0]) + 543;
+                    var monthIndex = parseInt(dateParts[1], 10) - 1;
+                    var thaiMonths = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
+                    var monthName = thaiMonths[monthIndex] || dateParts[1];
+                    dateStr = dateParts[2] + ' ' + monthName + ' ' + BEYear + ' เวลา ' + timeParts[0] + ':' + timeParts[1] + ' น. (ครั้งที่ ' + latestData.seq + ')';
+                }
             } catch (e) {
                 dateStr = latestData.asTime;
             }
