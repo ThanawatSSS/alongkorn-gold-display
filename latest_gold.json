@@ -1,18 +1,18 @@
 {
   "source": "goldtraders_sheet",
-  "generatedAt": "2026-09-11T11:23:55.305+07:00",
-  "goldPriceID": 87443,
-  "asTime": "2026-09-11T11:22:00",
-  "seq": 11,
+  "generatedAt": "2026-09-11T11:28:56.497+07:00",
+  "goldPriceID": 87444,
+  "asTime": "2026-09-11T11:28:00",
+  "seq": 12,
   "goldBar": {
-    "buy": 67650,
-    "sell": 67850
+    "buy": 67700,
+    "sell": 67900
   },
   "exchange": {
     "usdThb": 33.15
   },
   "change": {
     "fromPrevRound": 50,
-    "fromYesterday": -700
+    "fromYesterday": -650
   }
 }
