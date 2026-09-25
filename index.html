@@ -1,411 +1,695 @@
 <!DOCTYPE html>
-
 <html lang="th">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#5a0000">
+  <title>ร้านทองอลงกรณ์ - ราคาทองวันนี้</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg-top: #8a0000;
+      --bg-bottom: #250000;
+      --panel: rgba(45, 0, 0, 0.72);
+      --panel-strong: rgba(30, 0, 0, 0.86);
+      --gold: #ffd700;
+      --gold-bright: #ffe85c;
+      --gold-border: #d9ad00;
+      --text: #ffffff;
+      --text-muted: #e4dddd;
+      --up: #35ef89;
+      --down: #ff6868;
+      --warning: #ffd166;
+      --shadow: 0 1.2rem 3rem rgba(0, 0, 0, 0.36);
+      --radius: clamp(1rem, 1.8vw, 1.75rem);
+    }
 
-    <meta http-equiv="refresh" content="1800">
+    * {
+      box-sizing: border-box;
+    }
 
-    <title>ร้านทองอลงกรณ์ - ราคาทองวันนี้</title>
+    html {
+      min-height: 100%;
+      background: var(--bg-bottom);
+    }
 
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+    body {
+      min-height: 100vh;
+      min-height: 100dvh;
+      margin: 0;
+      padding: clamp(0.75rem, 2vh, 1.75rem) clamp(0.75rem, 2vw, 2rem);
+      background:
+        radial-gradient(circle at 12% 8%, rgba(255, 215, 0, 0.12), transparent 32rem),
+        linear-gradient(140deg, var(--bg-top), var(--bg-bottom));
+      color: var(--text);
+      font-family: "Noto Sans Thai", "Leelawadee UI", Tahoma, Arial, sans-serif;
+      overflow-x: hidden;
+    }
 
-        html,
-        body {
-            height: 100%;
-            overflow: hidden;
-        }
+    .display-grid {
+      width: min(100%, 112rem);
+      min-height: calc(100vh - clamp(1.5rem, 4vh, 3.5rem));
+      min-height: calc(100dvh - clamp(1.5rem, 4vh, 3.5rem));
+      margin-inline: auto;
+      display: grid;
+      grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+      gap: clamp(0.9rem, 2vw, 2.4rem);
+      align-items: stretch;
+    }
 
-        body {
-            background-color: #660000;
-            background-image: linear-gradient(135deg, #8A0000, #2B0000);
-            color: #FFFFFF;
-            font-family: Arial, Helvetica, Tahoma, sans-serif;
-        }
+    .panel {
+      border: clamp(2px, 0.25vw, 5px) solid var(--gold-border);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(8px);
+    }
 
-        /* Layout Wrapper - Table Display for Old TV support! */
-        .main-table {
-            display: table;
-            width: 96%;
-            height: 94%;
-            margin: 2% auto;
-            /* Centers the whole table horizontally with gap */
-            border-spacing: 40px 0px;
-            /* Creates the gap between the columns */
-        }
+    .brand-panel {
+      min-width: 0;
+      padding: clamp(1rem, 2.7vw, 2.8rem);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      gap: clamp(0.75rem, 1.7vh, 1.35rem);
+    }
 
-        .main-row {
-            display: table-row;
-        }
+    .shop-logo {
+      width: clamp(5.5rem, 10vw, 10rem);
+      height: auto;
+      aspect-ratio: 1;
+      object-fit: contain;
+      filter: drop-shadow(0 0.7rem 1rem rgba(0, 0, 0, 0.32));
+    }
 
-        /* LEFT COLUMN */
-        .left-col {
-            display: table-cell;
-            width: 48%;
-            vertical-align: middle;
-            text-align: center;
-            background-color: rgba(50, 0, 0, 0.6);
-            border: 5px solid #E6B800;
-            border-radius: 25px;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
-        }
+    .shop-name {
+      margin: 0;
+      color: var(--gold);
+      font-size: clamp(2rem, 4vw, 4.3rem);
+      line-height: 1.05;
+      font-weight: 800;
+      text-wrap: balance;
+      text-shadow: 0.08em 0.08em 0 #400000, 0 0.15em 0.35em rgba(0, 0, 0, 0.5);
+    }
 
-        .shop-header {
-            margin-bottom: 20px;
-        }
+    .trend-card {
+      width: min(100%, 40rem);
+      padding: clamp(0.8rem, 1.4vw, 1.25rem) clamp(1rem, 2.4vw, 2.2rem);
+      border: 2px solid rgba(230, 184, 0, 0.8);
+      border-radius: 999px;
+      background: rgba(30, 0, 0, 0.74);
+      font-size: clamp(1.25rem, 2.3vw, 2.3rem);
+      font-weight: 800;
+      line-height: 1.25;
+    }
 
-        .shop-logo {
-            width: 140px;
-            height: 140px;
-            vertical-align: middle;
-            margin-bottom: 15px;
-            display: block;
-            margin-left: auto;
-            margin-right: auto;
-        }
+    .info-stack {
+      width: min(100%, 42rem);
+      display: grid;
+      gap: clamp(0.45rem, 1vh, 0.8rem);
+      color: var(--text-muted);
+      font-size: clamp(1rem, 1.4vw, 1.35rem);
+      line-height: 1.45;
+    }
 
-        .shop-name {
-            font-size: 48px;
-            color: #FFD700;
-            font-weight: bold;
-            text-shadow: 2px 2px 0px #400000, 3px 3px 5px rgba(0, 0, 0, 0.8);
-            display: block;
-        }
+    .info-stack strong {
+      color: var(--gold-bright);
+      font-size: 1.12em;
+    }
 
-        /* DIFF */
-        .diff-tag {
-            font-size: 32px;
-            margin-top: 15px;
-            padding: 15px 40px;
-            background-color: #330000;
-            border-radius: 50px;
-            border: 3px solid #E6B800;
-            display: inline-block;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
-        }
+    .price-panel {
+      min-width: 0;
+      display: grid;
+      grid-template-rows: minmax(0, 1fr) minmax(0, 1fr) auto;
+      gap: clamp(0.8rem, 1.7vh, 1.35rem);
+    }
 
-        /* UPDATE INFO */
-        #update-info {
-            margin-top: 30px;
-            font-size: 22px;
-            color: #EEEEEE;
-        }
+    .price-card {
+      min-width: 0;
+      padding: clamp(1rem, 2.3vw, 2.4rem) clamp(1rem, 2.6vw, 2.8rem);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      border: clamp(2px, 0.22vw, 4px) solid var(--gold-border);
+      border-radius: var(--radius);
+      background: var(--panel-strong);
+      box-shadow: var(--shadow);
+    }
 
-        /* RIGHT COLUMN */
-        .right-col {
-            display: table-cell;
-            width: 48%;
-            vertical-align: middle;
-        }
+    .price-label {
+      margin-bottom: clamp(0.3rem, 0.8vh, 0.75rem);
+      color: var(--text-muted);
+      font-size: clamp(1.25rem, 2vw, 2rem);
+      font-weight: 650;
+    }
 
-        .asso-card {
-            display: block;
-            background-color: rgba(30, 0, 0, 0.7);
-            border: 4px solid #E6B800;
-            border-radius: 20px;
-            padding: 25px 35px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-            margin-bottom: 25px;
-            text-align: left;
-        }
+    .price-value-row {
+      min-width: 0;
+      display: flex;
+      align-items: baseline;
+      gap: clamp(0.5rem, 1.2vw, 1rem);
+      white-space: nowrap;
+    }
 
-        .asso-label {
-            display: block;
-            font-size: 28px;
-            color: #DDDDDD;
-            margin-bottom: 10px;
-        }
+    .price-value {
+      min-width: 0;
+      color: var(--gold-bright);
+      font-size: clamp(3.4rem, 8.6vw, 9rem);
+      line-height: 0.9;
+      font-weight: 900;
+      letter-spacing: -0.045em;
+      font-variant-numeric: tabular-nums;
+      text-shadow: 0.035em 0.035em 0 #500000, 0 0.08em 0.16em rgba(0, 0, 0, 0.55);
+    }
 
-        .price-row {
-            display: block;
-        }
+    .price-unit {
+      flex: 0 0 auto;
+      color: var(--gold-border);
+      font-size: clamp(1.2rem, 2vw, 2rem);
+      font-weight: 700;
+    }
 
-        .asso-price {
-            font-size: 100px;
-            color: #FFE600;
-            font-weight: bold;
-            line-height: 1;
-            text-shadow: 3px 3px 0px #500000, 5px 5px 8px rgba(0, 0, 0, 0.9);
-        }
+    .status-card {
+      min-width: 0;
+      padding: clamp(0.9rem, 1.6vw, 1.4rem) clamp(1rem, 2vw, 1.8rem);
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: clamp(0.75rem, 1.6vw, 1.4rem);
+      align-items: center;
+      border-radius: var(--radius);
+      background: rgba(45, 0, 0, 0.72);
+      box-shadow: var(--shadow);
+    }
 
-        .asso-unit {
-            font-size: 30px;
-            color: #E6B800;
-            margin-left: 15px;
-            vertical-align: baseline;
-        }
+    .clock {
+      font-size: clamp(1.5rem, 2.5vw, 2.4rem);
+      font-weight: 850;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
 
-        /* STATUS FOOTER */
-        .status-footer {
-            display: block;
-            background-color: rgba(50, 0, 0, 0.6);
-            padding: 20px 30px;
-            border-radius: 20px;
-            overflow: hidden;
-            /* Clearfix loop */
-        }
+    .status-copy {
+      min-width: 0;
+      display: grid;
+      gap: 0.3rem;
+      color: var(--text-muted);
+      font-size: clamp(0.9rem, 1.2vw, 1.1rem);
+      line-height: 1.35;
+    }
 
-        .clock-sync {
-            float: left;
-        }
+    .status-line {
+      min-width: 0;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.55rem;
+    }
 
-        .clock-display {
-            display: block;
-            font-size: 30px;
-            font-weight: bold;
-            margin-bottom: 5px;
-            color: #FFFFFF;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6);
-        }
+    .status-dot {
+      width: 0.7em;
+      height: 0.7em;
+      margin-top: 0.3em;
+      flex: 0 0 auto;
+      border-radius: 50%;
+      background: #c7c7c7;
+      box-shadow: 0 0 0.7rem currentColor;
+    }
 
-        #sync-status {
-            display: block;
-            font-size: 18px;
-            color: #DDDDDD;
-        }
+    .status-loading {
+      color: #8bd3ff;
+      background: currentColor;
+    }
 
+    .status-online {
+      color: var(--up);
+      background: currentColor;
+    }
 
+    .status-warning {
+      color: var(--warning);
+      background: currentColor;
+    }
 
-        .price-up {
-            color: #00FF66;
-            text-shadow: 1px 1px 0px #000;
-        }
+    .status-error {
+      color: var(--down);
+      background: currentColor;
+    }
 
-        .price-down {
-            color: #FF4444;
-            text-shadow: 1px 1px 0px #000;
-        }
+    .source-line {
+      overflow-wrap: anywhere;
+      opacity: 0.92;
+    }
 
-        .price-equal {
-            color: #FFFFFF;
-            text-shadow: 1px 1px 0px #000;
-        }
-    </style>
+    .price-up {
+      color: var(--up);
+    }
 
+    .price-down {
+      color: var(--down);
+    }
+
+    .price-equal {
+      color: var(--text);
+    }
+
+    @media (max-width: 900px) {
+      body {
+        padding: clamp(0.65rem, 2vw, 1rem);
+      }
+
+      .display-grid {
+        min-height: auto;
+        grid-template-columns: 1fr;
+      }
+
+      .brand-panel {
+        padding-block: clamp(1.2rem, 5vw, 2rem);
+      }
+
+      .price-panel {
+        grid-template-rows: auto;
+      }
+
+      .price-card {
+        min-height: clamp(10rem, 35vw, 16rem);
+      }
+
+      .price-value {
+        font-size: clamp(3.3rem, 17vw, 7rem);
+      }
+    }
+
+    @media (max-width: 520px) {
+      .status-card {
+        grid-template-columns: 1fr;
+      }
+
+      .price-value-row {
+        justify-content: space-between;
+        gap: 0.35rem;
+      }
+
+      .price-value {
+        font-size: clamp(3rem, 18vw, 5.4rem);
+      }
+
+      .price-unit {
+        font-size: clamp(1rem, 5vw, 1.35rem);
+      }
+
+      .trend-card {
+        border-radius: 1.1rem;
+      }
+    }
+
+    @media (max-height: 760px) and (min-width: 901px) {
+      body {
+        padding-block: 0.65rem;
+      }
+
+      .display-grid {
+        min-height: calc(100vh - 1.3rem);
+        min-height: calc(100dvh - 1.3rem);
+      }
+
+      .brand-panel {
+        gap: 0.55rem;
+        padding-block: 0.85rem;
+      }
+
+      .shop-logo {
+        width: clamp(4.2rem, 8vh, 6rem);
+      }
+
+      .shop-name {
+        font-size: clamp(2rem, 3.5vw, 3.4rem);
+      }
+
+      .price-panel {
+        gap: 0.65rem;
+      }
+
+      .price-card {
+        padding-block: 0.8rem;
+      }
+
+      .price-value {
+        font-size: clamp(3.6rem, 8vw, 7.2rem);
+      }
+
+      .status-card {
+        padding-block: 0.7rem;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
 </head>
-
 <body>
+  <main class="display-grid">
+    <section class="brand-panel panel" aria-labelledby="shop-title">
+      <img src="logo_no_bg.png" class="shop-logo" alt="โลโก้ร้านทองอลงกรณ์">
+      <h1 id="shop-title" class="shop-name">ร้านทองอลงกรณ์</h1>
 
-    <div class="main-table">
-        <div class="main-row">
-            <!-- LEFT: logo + diff + update -->
-            <div class="left-col">
-                <div class="shop-header">
-                    <img src="logo_no_bg.png" class="shop-logo" alt="Logo">
-                    <div class="shop-name">ร้านทองอลงกรณ์</div>
-                </div>
+      <div id="diff-info" class="trend-card price-equal" aria-live="polite">รอข้อมูล...</div>
 
-                <div id="diff-info" class="diff-tag">รอข้อมูล...</div>
+      <div class="info-stack">
+        <div id="prev-change-info">เทียบรอบก่อนหน้า: --</div>
+        <div id="update-info">อัปเดต: --</div>
+        <div>อัตราแลกเปลี่ยน USD: <strong id="usd-rate">--</strong> บาท</div>
+      </div>
+    </section>
 
-                <div id="prev-change-info" style="font-size: 20px; color: #EEEEEE; margin-top: 15px;">เทียบรอบก่อนหน้า:
-                    --</div>
-
-                <div id="update-info" style="margin-top: 20px;"></div>
-
-                <div id="exchange-info" style="font-size: 20px; color: #DDDDDD; margin-top: 20px;">
-                    อัตราแลกเปลี่ยน USD: <strong id="usd-rate"
-                        style="color: #FFE600; font-size: 24px; font-weight: bold; text-shadow: 1px 1px 2px rgba(0,0,0,0.6);">--</strong>
-                    บาท
-                </div>
-            </div>
-
-            <!-- RIGHT: asso prices + clock -->
-            <div class="right-col">
-
-                <div class="asso-card">
-                    <div class="asso-label">สมาคมฯ ขายออก</div>
-                    <div class="price-row">
-                        <span id="asso-sell" class="asso-price">---</span>
-                        <span class="asso-unit">บาท</span>
-                    </div>
-                </div>
-
-                <div class="asso-card">
-                    <div class="asso-label">สมาคมฯ รับซื้อ</div>
-                    <div class="price-row">
-                        <span id="asso-buy" class="asso-price">---</span>
-                        <span class="asso-unit">บาท</span>
-                    </div>
-                </div>
-
-                <div class="status-footer">
-                    <div class="clock-sync">
-                        <div id="clock" class="clock-display"></div>
-                        <div id="sync-status"></div>
-                    </div>
-                </div>
-
-            </div>
+    <section class="price-panel" aria-label="ราคาทองสมาคม">
+      <article class="price-card">
+        <div class="price-label">สมาคมฯ ขายออก</div>
+        <div class="price-value-row">
+          <span id="asso-sell" class="price-value">---</span>
+          <span class="price-unit">บาท</span>
         </div>
-    </div>
+      </article>
 
-    <script>
-        function formatNumber(num) {
-            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+      <article class="price-card">
+        <div class="price-label">สมาคมฯ รับซื้อ</div>
+        <div class="price-value-row">
+          <span id="asso-buy" class="price-value">---</span>
+          <span class="price-unit">บาท</span>
+        </div>
+      </article>
+
+      <footer class="status-card">
+        <div id="clock" class="clock">--:--:-- น.</div>
+        <div class="status-copy" aria-live="polite">
+          <div class="status-line">
+            <span id="status-dot" class="status-dot status-loading" aria-hidden="true"></span>
+            <span id="sync-status">กำลังเชื่อมต่อ Gold Fetch...</span>
+          </div>
+          <div id="source-info" class="source-line">แหล่งข้อมูล: --</div>
+        </div>
+      </footer>
+    </section>
+  </main>
+
+  <script>
+    "use strict";
+
+    const CONFIG = Object.freeze({
+      // Active GAS Web App deployment verified on 2026-09-24.
+      endpoint: "https://script.google.com/macros/s/AKfycbypwZzF80kwA6H3YpZJ2mfomTL7Ml4V7G1Z1YuBHZDZX9Jj8zKYj_rhP29QsPMx3Twkug/exec",
+      refreshMs: 40_000,
+      timeoutMs: 10_000,
+      maxAttempts: 3,
+      retryDelaysMs: [1_500, 4_000],
+      staleAfterMs: 15 * 60_000
+    });
+
+    const el = {
+      buy: document.getElementById("asso-buy"),
+      sell: document.getElementById("asso-sell"),
+      diff: document.getElementById("diff-info"),
+      prevDiff: document.getElementById("prev-change-info"),
+      update: document.getElementById("update-info"),
+      usd: document.getElementById("usd-rate"),
+      clock: document.getElementById("clock"),
+      statusDot: document.getElementById("status-dot"),
+      status: document.getElementById("sync-status"),
+      source: document.getElementById("source-info")
+    };
+
+    const priceFormatter = new Intl.NumberFormat("th-TH", {
+      maximumFractionDigits: 0
+    });
+
+    const exchangeFormatter = new Intl.NumberFormat("th-TH", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+
+    const bangkokClockFormatter = new Intl.DateTimeFormat("th-TH", {
+      timeZone: "Asia/Bangkok",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: false
+    });
+
+    const bangkokDateTimeFormatter = new Intl.DateTimeFormat("th-TH", {
+      timeZone: "Asia/Bangkok",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false
+    });
+
+    let lastGoodData = null;
+    let refreshTimer = null;
+    let refreshInFlight = false;
+
+    function toFiniteNumber(value) {
+      const number = Number(value);
+      return Number.isFinite(number) ? number : null;
+    }
+
+    function parseApiDate(value) {
+      if (!value) return null;
+
+      const text = String(value).trim();
+      if (!text) return null;
+
+      const hasExplicitZone = /(?:Z|[+-]\d{2}:\d{2})$/i.test(text);
+      const normalized = hasExplicitZone ? text : text + "+07:00";
+      const date = new Date(normalized);
+
+      return Number.isNaN(date.getTime()) ? null : date;
+    }
+
+    function setConnectionState(kind, message) {
+      el.statusDot.className = "status-dot status-" + kind;
+      el.status.textContent = message;
+    }
+
+    function setTrend(target, value, todayMode) {
+      const number = toFiniteNumber(value);
+      target.classList.remove("price-up", "price-down", "price-equal");
+
+      if (number === null) {
+        target.classList.add("price-equal");
+        target.textContent = todayMode ? "ข้อมูลการเปลี่ยนแปลงไม่พร้อม" : "เทียบรอบก่อนหน้า: --";
+        return;
+      }
+
+      if (number > 0) {
+        target.classList.add("price-up");
+        target.textContent = todayMode
+          ? "▲ วันนี้ขึ้น " + priceFormatter.format(number) + " บาท"
+          : "เทียบรอบก่อนหน้า: ▲ ขึ้น " + priceFormatter.format(number) + " บาท";
+        return;
+      }
+
+      if (number < 0) {
+        target.classList.add("price-down");
+        target.textContent = todayMode
+          ? "▼ วันนี้ลง " + priceFormatter.format(Math.abs(number)) + " บาท"
+          : "เทียบรอบก่อนหน้า: ▼ ลง " + priceFormatter.format(Math.abs(number)) + " บาท";
+        return;
+      }
+
+      target.classList.add("price-equal");
+      target.textContent = todayMode ? "— ราคาเท่าเมื่อวาน —" : "เทียบรอบก่อนหน้า: — เท่าเดิม —";
+    }
+
+    function validateData(data) {
+      if (!data || typeof data !== "object") {
+        throw new Error("payload data ไม่ถูกต้อง");
+      }
+
+      const buy = toFiniteNumber(data.goldBar?.buy);
+      const sell = toFiniteNumber(data.goldBar?.sell);
+
+      if (buy === null || sell === null || buy <= 0 || sell <= 0) {
+        throw new Error("ราคาทองใน payload ไม่ถูกต้อง");
+      }
+
+      return { buy, sell };
+    }
+
+    function renderGoldData(data) {
+      const prices = validateData(data);
+
+      el.buy.textContent = priceFormatter.format(prices.buy);
+      el.sell.textContent = priceFormatter.format(prices.sell);
+
+      setTrend(el.diff, data.change?.fromYesterday, true);
+      setTrend(el.prevDiff, data.change?.fromPrevRound, false);
+
+      const usdThb = toFiniteNumber(data.exchange?.usdThb);
+      el.usd.textContent = usdThb === null ? "--" : exchangeFormatter.format(usdThb);
+
+      const marketTime = parseApiDate(data.asTime);
+      const seqText = data.seq !== undefined && data.seq !== null
+        ? " (ครั้งที่ " + data.seq + ")"
+        : "";
+
+      el.update.textContent = marketTime
+        ? "อัปเดตราคา: " + bangkokDateTimeFormatter.format(marketTime) + " น." + seqText
+        : "อัปเดตราคา: --";
+
+      const source = data.source ?? "unknown";
+      const sourceId = data.goldPriceID ?? "--";
+      el.source.textContent = "แหล่งข้อมูล: " + source + " • Gold Price ID: " + sourceId;
+
+      const freshnessTime =
+        parseApiDate(data.checkedAt) ??
+        parseApiDate(data.recordedAt) ??
+        parseApiDate(data.asTime) ??
+        parseApiDate(data.generatedAt);
+
+      if (freshnessTime) {
+        const ageMs = Date.now() - freshnessTime.getTime();
+
+        if (ageMs > CONFIG.staleAfterMs) {
+          const ageMinutes = Math.max(1, Math.floor(ageMs / 60_000));
+          setConnectionState("warning", "ข้อมูลล่าช้า " + ageMinutes + " นาที • ยังแสดงข้อมูลล่าสุดที่มี");
+          return;
+        }
+      }
+
+      setConnectionState("online", "เชื่อมต่อ Gold Fetch สำเร็จ • ดึงข้อมูลล่าสุดแล้ว");
+    }
+
+    function validateEnvelope(payload) {
+      if (!payload || typeof payload !== "object") {
+        throw new Error("response ไม่ใช่ JSON object");
+      }
+
+      if (payload.success !== true) {
+        const message =
+          payload.error?.message ??
+          payload.error ??
+          payload.message ??
+          "Gold Fetch รายงานว่าไม่สำเร็จ";
+        throw new Error(String(message));
+      }
+
+      validateData(payload.data);
+      return payload.data;
+    }
+
+    async function fetchGoldData() {
+      const controller = new AbortController();
+      const timeoutId = window.setTimeout(() => controller.abort(), CONFIG.timeoutMs);
+
+      try {
+        const url = new URL(CONFIG.endpoint);
+        url.searchParams.set("_ts", String(Date.now()));
+
+        const response = await fetch(url.toString(), {
+          method: "GET",
+          headers: { "Accept": "application/json" },
+          cache: "no-store",
+          redirect: "follow",
+          signal: controller.signal
+        });
+
+        if (!response.ok) {
+          throw new Error("HTTP " + response.status);
         }
 
-        function updateClock() {
-            var d = new Date();
-            var h = d.getHours(), m = d.getMinutes(), s = d.getSeconds();
-            h = h < 10 ? '0' + h : h;
-            m = m < 10 ? '0' + m : m;
-            s = s < 10 ? '0' + s : s;
-            document.getElementById('clock').innerHTML = h + ':' + m + ':' + s + ' น.';
+        const payload = await response.json();
+        return validateEnvelope(payload);
+      } catch (error) {
+        if (error?.name === "AbortError") {
+          throw new Error("หมดเวลารอ Gold Fetch");
         }
-        setInterval(updateClock, 1000);
-        updateClock();
+        throw error;
+      } finally {
+        window.clearTimeout(timeoutId);
+      }
+    }
 
-        /* state กลาง */
-        var latestData = null;
+    function wait(ms) {
+      return new Promise((resolve) => window.setTimeout(resolve, ms));
+    }
 
-        function showOfflineStatus() {
-            document.getElementById('sync-status').innerHTML =
-                '<span style="color:#FF4444;">●</span> ออฟไลน์ (ขาดการเชื่อมต่อกับเซิร์ฟเวอร์)';
+    async function fetchWithRetry() {
+      let lastError = null;
+
+      for (let attempt = 0; attempt < CONFIG.maxAttempts; attempt += 1) {
+        try {
+          return await fetchGoldData();
+        } catch (error) {
+          lastError = error;
+
+          if (attempt < CONFIG.maxAttempts - 1) {
+            setConnectionState(
+              "loading",
+              "เชื่อมต่อไม่สำเร็จ กำลังลองใหม่ " + (attempt + 2) + "/" + CONFIG.maxAttempts
+            );
+            await wait(CONFIG.retryDelaysMs[attempt] ?? CONFIG.retryDelaysMs.at(-1) ?? 2_000);
+          }
         }
+      }
 
-        /* โหลด JSON */
-        function fetchJSON(url, successCallback) {
-            var xhr = new XMLHttpRequest();
-            xhr.open('GET', url + '?v=' + new Date().getTime(), true);
-            xhr.onreadystatechange = function () {
-                if (xhr.readyState === 4) {
-                    if (xhr.status === 200) {
-                        try {
-                            successCallback(JSON.parse(xhr.responseText));
-                        } catch (e) {
-                            showOfflineStatus();
-                        }
-                    } else {
-                        showOfflineStatus();
-                    }
-                }
-            };
-            xhr.onerror = function () {
-                showOfflineStatus();
-            };
-            xhr.send();
-        }
+      throw lastError ?? new Error("ไม่สามารถเชื่อมต่อ Gold Fetch");
+    }
 
-        /* render กลาง */
-        function tryRender() {
-            if (!latestData) return;
+    function scheduleRefresh() {
+      window.clearTimeout(refreshTimer);
+      refreshTimer = window.setTimeout(refreshData, CONFIG.refreshMs);
+    }
 
-            var buy = parseFloat(latestData.goldBar.buy);
-            var sell = parseFloat(latestData.goldBar.sell);
+    async function refreshData() {
+      if (refreshInFlight) return;
 
-            document.getElementById('asso-buy').innerText = formatNumber(buy);
-            document.getElementById('asso-sell').innerText = formatNumber(sell);
+      refreshInFlight = true;
+      window.clearTimeout(refreshTimer);
 
-            /* date + time */
-            var dateStr = '';
-            try {
-                var str = String(latestData.asTime || '');
-                var parts = str.replace(' ', 'T').split('T');
-                if (parts.length >= 2) {
-                    var dateParts = parts[0].split('-');
-                    var timeParts = parts[1].split(':');
-                    var BEYear = parseInt(dateParts[0], 10) + 543;
-                    var monthIndex = parseInt(dateParts[1], 10) - 1;
-                    var thaiMonths = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
-                    var monthName = thaiMonths[monthIndex] || dateParts[1];
-                    var day = parseInt(dateParts[2], 10);
-                    var hours = timeParts[0];
-                    var minutes = timeParts[1];
-                    var seqText = latestData.seq !== undefined ? ' (ครั้งที่ ' + latestData.seq + ')' : '';
-                    dateStr = day + ' ' + monthName + ' ' + BEYear + ' เวลา ' + hours + ':' + minutes + ' น.' + seqText;
-                } else {
-                    dateStr = str;
-                }
-            } catch (e) {
-                dateStr = latestData.asTime;
-            }
-            document.getElementById('update-info').innerHTML = 'อัปเดต: ' + dateStr;
+      if (!lastGoodData) {
+        setConnectionState("loading", "กำลังเชื่อมต่อ Gold Fetch...");
+      }
 
-            /* diff */
-            var diff = (latestData.change && latestData.change.fromYesterday !== undefined) ? latestData.change.fromYesterday : 0;
-            var diffEl = document.getElementById('diff-info');
+      try {
+        const data = await fetchWithRetry();
+        lastGoodData = data;
+        renderGoldData(data);
+      } catch (error) {
+        const detail = error instanceof Error ? error.message : String(error);
+        setConnectionState(
+          "error",
+          lastGoodData
+            ? "เชื่อมต่อไม่ได้ • ยังแสดงข้อมูลล่าสุดที่มี"
+            : "ไม่สามารถโหลดราคาทองได้"
+        );
+        el.source.textContent = "ข้อผิดพลาด: " + detail;
+      } finally {
+        refreshInFlight = false;
+        scheduleRefresh();
+      }
+    }
 
-            if (diff > 0) {
-                diffEl.innerHTML = '<span class="price-up">▲ วันนี้ขึ้น ' + formatNumber(diff) + ' บาท</span>';
-            }
-            else if (diff < 0) {
-                diffEl.innerHTML = '<span class="price-down">▼ วันนี้ลง ' + formatNumber(Math.abs(diff)) + ' บาท</span>';
-            }
-            else {
-                diffEl.innerHTML = '<span class="price-equal">— ราคาเท่าเมื่อวาน —</span>';
-            }
+    function updateClock() {
+      el.clock.textContent = bangkokClockFormatter.format(new Date()) + " น.";
+    }
 
-            /* change from prev round */
-            var prevDiff = (latestData.change && latestData.change.fromPrevRound !== undefined) ? latestData.change.fromPrevRound : 0;
-            var prevEl = document.getElementById('prev-change-info');
-            if (prevDiff > 0) {
-                prevEl.innerHTML = 'เทียบรอบก่อนหน้า: <span class="price-up">▲ ขึ้น ' + formatNumber(prevDiff) + ' บาท</span>';
-            }
-            else if (prevDiff < 0) {
-                prevEl.innerHTML = 'เทียบรอบก่อนหน้า: <span class="price-down">▼ ลง ' + formatNumber(Math.abs(prevDiff)) + ' บาท</span>';
-            }
-            else {
-                prevEl.innerHTML = 'เทียบรอบก่อนหน้า: <span class="price-equal">— เท่าเดิม —</span>';
-            }
+    window.addEventListener("online", () => {
+      setConnectionState("loading", "เครือข่ายกลับมาแล้ว กำลังอัปเดต...");
+      refreshData();
+    });
 
-            /* exchange rate */
-            var usdRate = (latestData.exchange && latestData.exchange.usdThb) ? latestData.exchange.usdThb : '--';
-            document.getElementById('usd-rate').innerText = usdRate;
+    window.addEventListener("offline", () => {
+      setConnectionState("error", "ออฟไลน์ • ยังแสดงข้อมูลล่าสุดที่มี");
+    });
 
-            /* sync status */
-            var now = new Date();
-            var h = now.getHours(), m = now.getMinutes();
-            h = h < 10 ? '0' + h : h;
-            m = m < 10 ? '0' + m : m;
-
-            var source = latestData.source || 'unknown';
-            var sourceId = latestData.goldPriceID || '--';
-
-            // Check if GAS data is stale (over 15 minutes)
-            var isStale = false;
-            if (latestData.generatedAt) {
-                try {
-                    var genTime = new Date(latestData.generatedAt);
-                    var diffMinutes = (now.getTime() - genTime.getTime()) / 60000;
-                    if (diffMinutes > 15) {
-                        isStale = true;
-                    }
-                } catch (err) {
-                    console.log('Error parsing generatedAt:', err);
-                }
-            }
-
-            if (isStale) {
-                document.getElementById('sync-status').innerHTML =
-                    '<span style="color:#FFCC00;">●</span> ข้อมูลล่าช้า (GAS ขัดข้อง) | ดึงล่าสุด ' + h + ':' + m + ' น.';
-            } else {
-                document.getElementById('sync-status').innerHTML =
-                    '<span style="color:#00FF00;">●</span> เชื่อมต่อล่าสุด ' + h + ':' + m + ' น. (แหล่งข้อมูล: ' + source + ' | ID: ' + sourceId + ')';
-            }
-        }
-
-        /* fetch ข้อมูล */
-        function fetchAll() {
-            latestData = null;
-
-            fetchJSON('latest_gold.json', function (data) {
-                latestData = data;
-                tryRender();
-            });
-        }
-
-        setInterval(fetchAll, 40000);
-        fetchAll();
-    </script>
-
+    updateClock();
+    window.setInterval(updateClock, 1_000);
+    refreshData();
+  </script>
 </body>
-
 </html>

@@ -1,47 +1,123 @@
-# Gold Price Display - ร้านทองอลงกรณ์ ✨
+# Alongkorn Gold Display
 
-เว็บแอปพลิเคชันแสดงราคาทองคำแบบ Real-time ออกแบบมาเป็นพิเศษเพื่อความเสถียรสูงสุดบน **Smart TV รุ่นเก่า (Samsung, Tizen, LG WebOS ฯลฯ)** โดยเฉพาะที่ร้านทองอลงกรณ์
+หน้าแสดงราคาทองของร้านทองอลงกรณ์บน GitHub Pages โดยใช้ Google Apps Script (Gold Fetch) เป็น backend สำหรับข้อมูลราคาโดยตรง
 
----
+## Architecture
 
-## 🚀 คุณสมบัติเด่น (Key Features)
+Runtime เดิม:
 
-- **TV-Optimized Layout:** ปรับแต่งเลย์เอาต์แบบ Wide Screen ให้แสดงผลได้เต็มหน้าจอที่ 100% Zoom โดยไม่ต้องปรับแต่งที่ตัวเครื่องทีวี
-- **Hybrid Data Fetching:** ใช้ระบบ **GitHub Actions** ดึงราคามาเก็บไว้ที่ฝั่งตัวเองทุก 5 นาที เพื่อแก้ปัญหาการเชื่อมต่อ (SSL/CORS) บนทีวีรุ่นเก่าได้ 100%
-- **Hero Price Display:** เน้นราคาขายหน้าร้าน (บวกเพิ่มจากสมาคมอัตโนมัติ) ให้โดดเด่นและชัดเจนที่สุด
-- **Price Trend Indicators:** แสดงสัญลักษณ์ ▲ (ขึ้น) / ▼ (ลง) พร้อมสีสันที่ชัดเจนตามสถานะตลาด
-- **Time-Ago Logic:** บอกระยะเวลาที่อัปเดตล่าสุดอย่างแม่นยำ (เช่น "อัปเดตเมื่อ 10 นาทีที่แล้ว")
-- **Legacy Browser Support:** เขียนด้วยมาตรฐาน **ES5** และ Pure CSS เพื่อความลื่นไหลในเบราว์เซอร์รุ่นเก่า
+```text
+GoldTraders API
+  -> GAS trigger
+  -> PriceLog
+  -> GitHub latest_gold.json
+  -> GitHub Pages frontend
+```
 
----
+Runtime ใหม่:
 
-## 🛠️ วิธีการตั้งค่าสำหรับ GitHub Pages
+```text
+GoldTraders API
+  -> GAS trigger
+  -> PriceLog Google Sheet
+  -> GAS Web App doGet()
+  -> Alongkorn Display (GitHub Pages)
+```
 
-เพื่อให้ระบบทำงานได้สมบูรณ์แบบบนทีวีรุ่นเก่า:
+GitHub ไม่มีหน้าที่เป็น runtime data store อีกต่อไป ใช้เก็บ source และ host หน้า frontend เท่านั้น
 
-1. **เปิดใช้งาน GitHub Pages:** ไปที่ `Settings > Pages` ของ Repository นี้ แล้วเลือก Branch `master`
-2. **ระบบอัปเดตราคา:** ปัจจุบันย้ายระบบดึงและอัปเดตราคาทองคำไปรันบน **Google Apps Script (GAS)** เพื่อหลีกเลี่ยงการติด Cloudflare 403 Challenge จากฝั่ง GitHub Actions
+## Frontend
 
----
+`index.html` เป็น responsive frontend สำหรับ browser รุ่นใหม่:
 
-## ⏪ การย้อนกลับ (Rollback)
+- CSS Grid / Flex
+- `clamp()`, `minmax()` และ responsive units
+- รองรับ modern TV, desktop, laptop, tablet และ mobile
+- ไม่ใช้ table-layout hack หรือ fixed-resolution layout
+- ใช้ `fetch`, `async/await`, optional chaining, `Intl.NumberFormat` และ `AbortController`
+- fetch GAS Web App โดยตรง
+- รองรับ response wrapper `{ success: true, data: {...} }`
+- มี timeout, bounded retry, malformed-payload handling และ stale-data warning
+- freshness ใช้ `checkedAt` เป็นหลัก แล้ว fallback ไป `recordedAt`, `asTime` และ `generatedAt`
 
-หากวันใดเกิดปัญหากับระบบอัปเดตผ่าน GAS และต้องการย้อนกลับมาใช้ระบบ GitHub Actions ในการดึงราคาแบบเดิม สามารถตรวจสอบโค้ดหรือกู้คืนได้ทันที:
+GAS endpoint ตั้งอยู่ใน `CONFIG.endpoint` ภายใน `index.html`:
 
-- **ตรวจสอบโค้ดเดิมใน Branch สำรอง:**
-  ```bash
-  git checkout backup/github-actions-chnwt
-  ```
-- **หรือดึงโค้ด GitHub Actions กลับมาใช้ใน master:**
-  ใช้คำสั่ง `git cherry-pick` ดึง commit หรือก๊อปปี้ไฟล์ `.github/workflows/update_gold.yml` จาก branch สำรองกลับมาใช้งานได้ทันที
+```text
+https://script.google.com/macros/s/AKfycbypwZzF80kwA6H3YpZJ2mfomTL7Ml4V7G1Z1YuBHZDZX9Jj8zKYj_rhP29QsPMx3Twkug/exec
+```
 
----
+## Gold Fetch GAS
 
-## 🙏 ขอบคุณแหล่งข้อมูล (Credits)
+source ที่ต้อง deploy อยู่ที่:
 
-โครงการนี้สำเร็จได้ด้วยข้อมูลราคาทองคำคุณภาพสูงจาก:
+```text
+gas/Code.gs
+```
 
-- **Thai Gold API** พัฒนาโดยคุณ **@chnwt** | [Website](https://api.chnwt.dev/thai-gold-api)
-- **API Developer GitHub:** [chnwt](https://github.com/chnwt)
+พฤติกรรมหลัก:
 
----
+- `fetchGoldTraders()` และ validation เดิมยังคงอยู่
+- `SPREADSHEET_ID` และ PriceLog header ภาษาไทยเดิมยังคงอยู่
+- trigger sync เขียนแถวใหม่เฉพาะเมื่อ `GoldPriceID` เปลี่ยน
+- cleanup ประวัติเกิน 7 วันยังคงอยู่
+- `LAST_SUCCESSFUL_GOLD_SYNC_AT` เป็น heartbeat ที่อัปเดตเมื่อ GoldTraders ตอบสำเร็จ
+- `doGet()` อ่านข้อมูลล่าสุดจาก `PriceLog`
+- ไม่มี GitHub API read/write ใน runtime
+- ไม่มีการอ่าน `GITHUB_TOKEN`, `GITHUB_OWNER`, `GITHUB_REPO`, `GITHUB_BRANCH` หรือ `LATEST_FILE_PATH`
+- `updateGoldHybrid()` ยังคงเป็น compatibility wrapper เพื่อให้ Trigger เดิมทำงานต่อ
+- `forceUpdateGoldHybrid()` ยังเรียกได้สำหรับ manual refresh แต่ไม่มีความหมายเรื่อง force-push GitHub แล้ว
+
+อย่าลบหรือปิด Trigger เดิมโดยไม่ตรวจว่า Trigger ผูกกับ function ใดก่อน
+
+## GAS response contract
+
+```json
+{
+  "success": true,
+  "data": {
+    "source": "goldtraders_sheet",
+    "generatedAt": "...",
+    "checkedAt": "...",
+    "recordedAt": "...",
+    "goldPriceID": 87665,
+    "asTime": "...",
+    "seq": 7,
+    "goldBar": {
+      "buy": 67650,
+      "sell": 67850
+    },
+    "exchange": {
+      "usdThb": 33.42
+    },
+    "change": {
+      "fromPrevRound": 50,
+      "fromYesterday": -150
+    }
+  }
+}
+```
+
+ความหมายของเวลา:
+
+- `generatedAt`: เวลาที่ `doGet()` สร้าง response
+- `checkedAt`: เวลาที่ Trigger/API sync ติดต่อ GoldTraders สำเร็จล่าสุด
+- `recordedAt`: เวลาที่มีการ append แถวราคาใหม่ลง PriceLog
+- `asTime`: เวลาประกาศราคาจากสมาคมค้าทองคำ
+
+## Deployment checklist
+
+1. ตรวจ Apps Script Trigger และคง `updateGoldHybrid()` ไว้
+2. นำ `gas/Code.gs` ไปแทน Code.gs ของ Gold Fetch
+3. Save และ deploy เวอร์ชันใหม่ของ GAS Web App
+4. รัน/ตรวจ Trigger แล้วเปิด endpoint เพื่อยืนยัน `success: true` และมี `checkedAt`
+5. ตรวจหน้า GitHub Pages ว่า fetch GAS โดยตรง
+6. หลัง production ผ่านแล้ว Script Properties `GITHUB_*` และ `LATEST_FILE_PATH` เดิมสามารถลบได้ เพราะ code ใหม่ไม่ใช้งาน
+7. ไม่ต้องสร้างหรืออัปเดต `latest_gold.json` อีกต่อไป
+
+## Source
+
+ข้อมูลราคาหลักมาจาก Gold Traders Association endpoint:
+
+```text
+https://www.goldtraders.or.th/api/GoldPrices/Latest
+```

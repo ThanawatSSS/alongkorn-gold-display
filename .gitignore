@@ -4,4 +4,6 @@ _agent/
 _agents/
 .DS_Store
 node_modules/
-# latest_gold.json ไม่ต้อง ignore เพราะต้องใช้ใน GitHub Pages ให้ดึงข้อมูลได้สำเร็จครับ
+
+# latest_gold.json is retained only as a historical snapshot.
+# Runtime data is served directly by the GAS Web App.
