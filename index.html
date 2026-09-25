@@ -403,7 +403,8 @@
       refreshMs: 40_000,
       timeoutMs: 30_000,
       maxAttempts: 3,
-      retryDelaysMs: [1_500, 4_000]
+      retryDelaysMs: [1_500, 4_000],
+      storedPriceKey: "alongkorn-gold:last-good:v1"
     });
 
     const el = {
@@ -449,6 +450,33 @@
     let lastGoodData = null;
     let refreshTimer = null;
     let refreshInFlight = false;
+
+    function restoreLastGoodData() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(CONFIG.storedPriceKey));
+        if (!saved || saved.endpoint !== CONFIG.endpoint) return;
+        validateData(saved.data);
+        lastGoodData = saved.data;
+        renderGoldData(saved.data);
+        const savedAt = parseApiDate(saved.fetchedAt);
+        const timeText = savedAt ? " (ตรวจล่าสุด " + bangkokDateTimeFormatter.format(savedAt) + " น.)" : "";
+        setConnectionState("warning", "แสดงราคาที่บันทึกไว้" + timeText + " • กำลังตรวจราคาใหม่");
+      } catch (_) {
+        // Storage can be unavailable or contain old/malformed data.
+      }
+    }
+
+    function storeLastGoodData(data) {
+      try {
+        localStorage.setItem(CONFIG.storedPriceKey, JSON.stringify({
+          endpoint: CONFIG.endpoint,
+          fetchedAt: new Date().toISOString(),
+          data: data
+        }));
+      } catch (_) {
+        // Keep the current display working when storage is unavailable.
+      }
+    }
 
     function toFiniteNumber(value) {
       const number = Number(value);
@@ -643,6 +671,7 @@
         const data = await fetchWithRetry();
         lastGoodData = data;
         renderGoldData(data);
+        storeLastGoodData(data);
       } catch (error) {
         const detail = error instanceof Error ? error.message : String(error);
         setConnectionState(
@@ -673,6 +702,7 @@
 
     updateClock();
     window.setInterval(updateClock, 1_000);
+    restoreLastGoodData();
     refreshData();
   </script>
 </body>

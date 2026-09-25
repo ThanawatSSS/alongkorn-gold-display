@@ -3,6 +3,7 @@
 // =================================================================
 
 const SPREADSHEET_ID = "1P8IJzEQDEYJPjV3DI6KIk_uwIL6jgzw2BcXtqswzfcY";
+const LATEST_GOLD_CACHE_KEY = "latestGoldData:v1";
 const DEFAULT_HEADERS = [
   "บันทึกเมื่อ", "GoldPriceID", "เวลาประกาศ", "ครั้งที่",
   "สมาคมซื้อ", "สมาคมขาย", "เทียบเมื่อวาน", "เทียบรอบก่อน", "USD/THB", "RawData"
@@ -76,6 +77,11 @@ function syncGoldPrice_() {
       sheet.appendRow(newRowData);
       lastRow = sheet.getLastRow();
       headers = getCleanHeaders_(sheet);
+      try {
+        CacheService.getScriptCache().remove(LATEST_GOLD_CACHE_KEY);
+      } catch (e) {
+        Logger.log("Could not clear price cache: " + e.toString());
+      }
     }
   }
 
@@ -247,7 +253,21 @@ function validateGoldTraders(data) {
 
 function doGet(e) {
   try {
-    const data = getLatestGoldData_();
+    let cached = null;
+    try {
+      cached = CacheService.getScriptCache().get(LATEST_GOLD_CACHE_KEY);
+    } catch (e) {
+      Logger.log("Could not read price cache: " + e.toString());
+    }
+    const data = cached ? JSON.parse(cached) : getLatestGoldData_();
+    if (!cached) {
+      try {
+        CacheService.getScriptCache().put(LATEST_GOLD_CACHE_KEY, JSON.stringify(data), 60);
+      } catch (e) {
+        Logger.log("Could not store price cache: " + e.toString());
+      }
+    }
+    data.generatedAt = formatThaiTime_(new Date(), true);
 
     return jsonResponse_({
       success: true,
