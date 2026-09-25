@@ -41,7 +41,8 @@ function syncGoldPrice_() {
     rawData = fetchGoldTraders();
     isApiSuccess = true;
   } catch (e) {
-    Logger.log("Fetch API Failed, will check sheet directly: " + e.toString());
+    Logger.log("Fetch GoldTraders failed: " + e.toString());
+    throw e;
   }
 
   // 3. อ่านหัวตารางปัจจุบัน
@@ -252,6 +253,7 @@ function validateGoldTraders(data) {
 // ==========================================
 
 function doGet(e) {
+  const callback = e && e.parameter && e.parameter.callback;
   try {
     let cached = null;
     try {
@@ -269,16 +271,26 @@ function doGet(e) {
     }
     data.generatedAt = formatThaiTime_(new Date(), true);
 
-    return jsonResponse_({
+    return goldResponse_({
       success: true,
       data: data
-    });
+    }, callback);
   } catch (error) {
-    return jsonResponse_({
+    return goldResponse_({
       success: false,
       error: error.message
-    });
+    }, callback);
   }
+}
+
+function goldResponse_(payload, callback) {
+  // Fixed callback only: public price data, no arbitrary JavaScript injection.
+  if (callback === "__alongkornGoldCallback") {
+    return ContentService
+      .createTextOutput("__alongkornGoldCallback(" + JSON.stringify(payload) + ");")
+      .setMimeType(ContentService.MimeType.JAVASCRIPT);
+  }
+  return jsonResponse_(payload);
 }
 
 function getLatestGoldData_() {

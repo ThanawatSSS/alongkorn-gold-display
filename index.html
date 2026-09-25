@@ -399,12 +399,13 @@
     "use strict";
 
     const CONFIG = Object.freeze({
-      endpoint: "https://script.google.com/macros/s/AKfycbyKNLkO5CxY2EV-c_1QFh83Ayk1bt_Jq8hpH5hiuwYzmtXgqCbJXMgv99PPuiQW4t21hQ/exec",
+      endpoint: "https://script.google.com/macros/s/AKfycbyV_ZEbQO9lXs2yXn6_iINYcBnkkkp8aHhvcIgoLdL3wcFPWXkwEteVnoqI9oGaCMMuyg/exec",
       refreshMs: 40_000,
       timeoutMs: 30_000,
       maxAttempts: 3,
       retryDelaysMs: [1_500, 4_000],
-      storedPriceKey: "alongkorn-gold:last-good:v1"
+      storedPriceKey: "alongkorn-gold:last-good:v1",
+      storedTransportKey: "alongkorn-gold:transport:v1"
     });
 
     const el = {
@@ -450,6 +451,22 @@
     let lastGoodData = null;
     let refreshTimer = null;
     let refreshInFlight = false;
+    let preferJsonp = false;
+
+    try {
+      preferJsonp = localStorage.getItem(CONFIG.storedTransportKey) === "jsonp";
+    } catch (_) {
+      // Storage may be disabled on some TV browsers.
+    }
+
+    function setPreferredTransport(jsonp) {
+      preferJsonp = jsonp;
+      try {
+        localStorage.setItem(CONFIG.storedTransportKey, jsonp ? "jsonp" : "fetch");
+      } catch (_) {
+        // Transport selection still works for this page without storage.
+      }
+    }
 
     function restoreLastGoodData() {
       try {
@@ -625,6 +642,43 @@
       }
     }
 
+    function fetchGoldDataJsonp() {
+      return new Promise((resolve, reject) => {
+        const callbackName = "__alongkornGoldCallback";
+        const script = document.createElement("script");
+        const url = new URL(CONFIG.endpoint);
+        let timeoutId;
+        let settled = false;
+
+        function finish(error, payload) {
+          if (settled) return;
+          settled = true;
+          window.clearTimeout(timeoutId);
+          window[callbackName] = () => {};
+          if (script.parentNode) script.parentNode.removeChild(script);
+          if (error) reject(error);
+          else resolve(payload);
+        }
+
+        window[callbackName] = (payload) => {
+          try {
+            const data = validateEnvelope(payload);
+            setPreferredTransport(true);
+            finish(null, data);
+          } catch (error) {
+            finish(error);
+          }
+        };
+        script.onerror = () => finish(new Error("โหลด GAS ผ่าน script ไม่สำเร็จ"));
+        url.searchParams.set("callback", callbackName);
+        url.searchParams.set("_ts", String(Date.now()));
+        script.src = url.toString();
+        script.async = true;
+        timeoutId = window.setTimeout(() => finish(new Error("หมดเวลารอ GAS ผ่าน script")), CONFIG.timeoutMs);
+        document.head.appendChild(script);
+      });
+    }
+
     function wait(ms) {
       return new Promise((resolve) => window.setTimeout(resolve, ms));
     }
@@ -634,9 +688,20 @@
 
       for (let attempt = 0; attempt < CONFIG.maxAttempts; attempt += 1) {
         try {
-          return await fetchGoldData();
+          const data = preferJsonp ? await fetchGoldDataJsonp() : await fetchGoldData();
+          if (!preferJsonp) setPreferredTransport(false);
+          return data;
         } catch (error) {
           lastError = error;
+
+          try {
+            const fallbackToJsonp = !preferJsonp;
+            const data = fallbackToJsonp ? await fetchGoldDataJsonp() : await fetchGoldData();
+            if (!fallbackToJsonp) setPreferredTransport(false);
+            return data;
+          } catch (fallbackError) {
+            lastError = fallbackError;
+          }
 
           if (attempt < CONFIG.maxAttempts - 1) {
             setConnectionState(

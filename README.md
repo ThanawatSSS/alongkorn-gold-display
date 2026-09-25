@@ -38,13 +38,14 @@ GitHub ไม่มีหน้าที่เป็น runtime data store อ�
 - fetch GAS Web App โดยตรง
 - รองรับ response wrapper `{ success: true, data: {...} }`
 - มี timeout, bounded retry และ malformed-payload handling
+- หาก Android browser ดึง JSON ด้วย `fetch()` ไม่สำเร็จ จะลองอ่านข้อมูลสาธารณะชุดเดียวกันจาก GAS ผ่าน JSONP (`<script>`) แล้วใช้วิธีนั้นต่อในหน้านั้น
 - แสดงราคาที่เคยโหลดสำเร็จจากเครื่องนี้ทันทีเมื่อเปิดหน้า พร้อมบอกว่ากำลังตรวจราคาใหม่; เปลี่ยนเป็นสถานะเชื่อมต่อสำเร็จเมื่อได้ข้อมูลสด
 - สถานะการเชื่อมต่ออ้างอิงผล fetch ล่าสุด ส่วนเวลาอัปเดตราคาแสดงจาก `asTime` เพราะราคาอาจคงเดิมนานโดยไม่มีการประกาศรอบใหม่
 
 GAS endpoint ตั้งอยู่ใน `CONFIG.endpoint` ภายใน `index.html`:
 
 ```text
-https://script.google.com/macros/s/AKfycbyKNLkO5CxY2EV-c_1QFh83Ayk1bt_Jq8hpH5hiuwYzmtXgqCbJXMgv99PPuiQW4t21hQ/exec
+https://script.google.com/macros/s/AKfycbyV_ZEbQO9lXs2yXn6_iINYcBnkkkp8aHhvcIgoLdL3wcFPWXkwEteVnoqI9oGaCMMuyg/exec
 ```
 
 ## Gold Fetch GAS
@@ -60,9 +61,11 @@ gas/Code.gs
 - `fetchGoldTraders()` และ validation เดิมยังคงอยู่
 - `SPREADSHEET_ID` และ PriceLog header ภาษาไทยเดิมยังคงอยู่
 - trigger sync เขียนแถวใหม่เฉพาะเมื่อ `GoldPriceID` เปลี่ยน
+- หาก GoldTraders API ล้มเหลว Trigger จะรายงานเป็น execution ที่ล้มเหลว แทนการจบแบบสำเร็จเงียบ ๆ
 - cleanup ประวัติเกิน 7 วันยังคงอยู่
 - `doGet()` อ่านข้อมูลล่าสุดจาก `PriceLog`
 - `doGet()` ใช้ Script Cache สูงสุด 60 วินาทีเพื่อลดการอ่าน Sheet ซ้ำ และล้าง cache เมื่อมี `GoldPriceID` ใหม่
+- `doGet()` ตอบ JSON ตามเดิม และตอบ JSONP เฉพาะ callback คงที่สำหรับหน้า TV; ทั้งสองแบบอ่านข้อมูลราคาสาธารณะเท่านั้น
 - ไม่มี GitHub API read/write ใน runtime
 - ไม่มีการอ่าน `GITHUB_TOKEN`, `GITHUB_OWNER`, `GITHUB_REPO`, `GITHUB_BRANCH` หรือ `LATEST_FILE_PATH`
 - `updateGoldHybrid()` ยังคงเป็น entry point เพื่อให้ Trigger เดิมทำงานต่อ
