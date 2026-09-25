@@ -37,13 +37,13 @@ GitHub ไม่มีหน้าที่เป็น runtime data store อ�
 - ใช้ `fetch`, `async/await`, optional chaining, `Intl.NumberFormat` และ `AbortController`
 - fetch GAS Web App โดยตรง
 - รองรับ response wrapper `{ success: true, data: {...} }`
-- มี timeout, bounded retry, malformed-payload handling และ stale-data warning
-- freshness ใช้ `checkedAt` เป็นหลัก แล้ว fallback ไป `recordedAt`, `asTime` และ `generatedAt`
+- มี timeout, bounded retry และ malformed-payload handling
+- สถานะการเชื่อมต่ออ้างอิงผล fetch ล่าสุด ส่วนเวลาอัปเดตราคาแสดงจาก `asTime` เพราะราคาอาจคงเดิมนานโดยไม่มีการประกาศรอบใหม่
 
 GAS endpoint ตั้งอยู่ใน `CONFIG.endpoint` ภายใน `index.html`:
 
 ```text
-https://script.google.com/macros/s/AKfycbypwZzF80kwA6H3YpZJ2mfomTL7Ml4V7G1Z1YuBHZDZX9Jj8zKYj_rhP29QsPMx3Twkug/exec
+https://script.google.com/macros/s/AKfycbz0J5nBF0gpJoTF5e4dr_j0BMZfmKS2Uh6lsJn_QI67iTkcUW2bEOSRbx9G4cFALmknbg/exec
 ```
 
 ## Gold Fetch GAS
@@ -60,11 +60,10 @@ gas/Code.gs
 - `SPREADSHEET_ID` และ PriceLog header ภาษาไทยเดิมยังคงอยู่
 - trigger sync เขียนแถวใหม่เฉพาะเมื่อ `GoldPriceID` เปลี่ยน
 - cleanup ประวัติเกิน 7 วันยังคงอยู่
-- `LAST_SUCCESSFUL_GOLD_SYNC_AT` เป็น heartbeat ที่อัปเดตเมื่อ GoldTraders ตอบสำเร็จ
 - `doGet()` อ่านข้อมูลล่าสุดจาก `PriceLog`
 - ไม่มี GitHub API read/write ใน runtime
 - ไม่มีการอ่าน `GITHUB_TOKEN`, `GITHUB_OWNER`, `GITHUB_REPO`, `GITHUB_BRANCH` หรือ `LATEST_FILE_PATH`
-- `updateGoldHybrid()` ยังคงเป็น compatibility wrapper เพื่อให้ Trigger เดิมทำงานต่อ
+- `updateGoldHybrid()` ยังคงเป็น entry point เพื่อให้ Trigger เดิมทำงานต่อ
 - `forceUpdateGoldHybrid()` ยังเรียกได้สำหรับ manual refresh แต่ไม่มีความหมายเรื่อง force-push GitHub แล้ว
 
 อย่าลบหรือปิด Trigger เดิมโดยไม่ตรวจว่า Trigger ผูกกับ function ใดก่อน
@@ -77,7 +76,6 @@ gas/Code.gs
   "data": {
     "source": "goldtraders_sheet",
     "generatedAt": "...",
-    "checkedAt": "...",
     "recordedAt": "...",
     "goldPriceID": 87665,
     "asTime": "...",
@@ -100,7 +98,6 @@ gas/Code.gs
 ความหมายของเวลา:
 
 - `generatedAt`: เวลาที่ `doGet()` สร้าง response
-- `checkedAt`: เวลาที่ Trigger/API sync ติดต่อ GoldTraders สำเร็จล่าสุด
 - `recordedAt`: เวลาที่มีการ append แถวราคาใหม่ลง PriceLog
 - `asTime`: เวลาประกาศราคาจากสมาคมค้าทองคำ
 
@@ -109,7 +106,7 @@ gas/Code.gs
 1. ตรวจ Apps Script Trigger และคง `updateGoldHybrid()` ไว้
 2. นำ `gas/Code.gs` ไปแทน Code.gs ของ Gold Fetch
 3. Save และ deploy เวอร์ชันใหม่ของ GAS Web App
-4. รัน/ตรวจ Trigger แล้วเปิด endpoint เพื่อยืนยัน `success: true` และมี `checkedAt`
+4. รัน/ตรวจ Trigger แล้วเปิด endpoint เพื่อยืนยัน `success: true`, `recordedAt` และราคาซื้อขาย
 5. ตรวจหน้า GitHub Pages ว่า fetch GAS โดยตรง
 6. หลัง production ผ่านแล้ว Script Properties `GITHUB_*` และ `LATEST_FILE_PATH` เดิมสามารถลบได้ เพราะ code ใหม่ไม่ใช้งาน
 7. ไม่ต้องสร้างหรืออัปเดต `latest_gold.json` อีกต่อไป

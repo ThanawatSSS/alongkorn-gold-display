@@ -399,13 +399,11 @@
     "use strict";
 
     const CONFIG = Object.freeze({
-      // Active GAS Web App deployment verified on 2026-09-24.
-      endpoint: "https://script.google.com/macros/s/AKfycbypwZzF80kwA6H3YpZJ2mfomTL7Ml4V7G1Z1YuBHZDZX9Jj8zKYj_rhP29QsPMx3Twkug/exec",
+      endpoint: "https://script.google.com/macros/s/AKfycbz0J5nBF0gpJoTF5e4dr_j0BMZfmKS2Uh6lsJn_QI67iTkcUW2bEOSRbx9G4cFALmknbg/exec",
       refreshMs: 40_000,
-      timeoutMs: 10_000,
+      timeoutMs: 30_000,
       maxAttempts: 3,
-      retryDelaysMs: [1_500, 4_000],
-      staleAfterMs: 15 * 60_000
+      retryDelaysMs: [1_500, 4_000]
     });
 
     const el = {
@@ -545,23 +543,9 @@
       const sourceId = data.goldPriceID ?? "--";
       el.source.textContent = "แหล่งข้อมูล: " + source + " • Gold Price ID: " + sourceId;
 
-      const freshnessTime =
-        parseApiDate(data.checkedAt) ??
-        parseApiDate(data.recordedAt) ??
-        parseApiDate(data.asTime) ??
-        parseApiDate(data.generatedAt);
-
-      if (freshnessTime) {
-        const ageMs = Date.now() - freshnessTime.getTime();
-
-        if (ageMs > CONFIG.staleAfterMs) {
-          const ageMinutes = Math.max(1, Math.floor(ageMs / 60_000));
-          setConnectionState("warning", "ข้อมูลล่าช้า " + ageMinutes + " นาที • ยังแสดงข้อมูลล่าสุดที่มี");
-          return;
-        }
-      }
-
-      setConnectionState("online", "เชื่อมต่อ Gold Fetch สำเร็จ • ดึงข้อมูลล่าสุดแล้ว");
+      // PriceLog only changes when GoldPriceID changes. An old recordedAt/asTime
+      // can be normal when no new price has been announced.
+      setConnectionState("online", "เชื่อมต่อ Gold Fetch สำเร็จ • แสดงราคาประกาศล่าสุด");
     }
 
     function validateEnvelope(payload) {
