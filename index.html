@@ -399,7 +399,7 @@
     "use strict";
 
     const CONFIG = Object.freeze({
-      endpoint: "https://script.google.com/macros/s/AKfycbz0J5nBF0gpJoTF5e4dr_j0BMZfmKS2Uh6lsJn_QI67iTkcUW2bEOSRbx9G4cFALmknbg/exec",
+      endpoint: "https://script.google.com/macros/s/AKfycbyKNLkO5CxY2EV-c_1QFh83Ayk1bt_Jq8hpH5hiuwYzmtXgqCbJXMgv99PPuiQW4t21hQ/exec",
       refreshMs: 40_000,
       timeoutMs: 30_000,
       maxAttempts: 3,
@@ -454,7 +454,7 @@
     function restoreLastGoodData() {
       try {
         const saved = JSON.parse(localStorage.getItem(CONFIG.storedPriceKey));
-        if (!saved || saved.endpoint !== CONFIG.endpoint) return;
+        if (!saved) return;
         validateData(saved.data);
         lastGoodData = saved.data;
         renderGoldData(saved.data);
@@ -469,7 +469,6 @@
     function storeLastGoodData(data) {
       try {
         localStorage.setItem(CONFIG.storedPriceKey, JSON.stringify({
-          endpoint: CONFIG.endpoint,
           fetchedAt: new Date().toISOString(),
           data: data
         }));

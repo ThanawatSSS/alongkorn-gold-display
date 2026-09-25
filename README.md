@@ -44,7 +44,7 @@ GitHub ไม่มีหน้าที่เป็น runtime data store อ�
 GAS endpoint ตั้งอยู่ใน `CONFIG.endpoint` ภายใน `index.html`:
 
 ```text
-https://script.google.com/macros/s/AKfycbz0J5nBF0gpJoTF5e4dr_j0BMZfmKS2Uh6lsJn_QI67iTkcUW2bEOSRbx9G4cFALmknbg/exec
+https://script.google.com/macros/s/AKfycbyKNLkO5CxY2EV-c_1QFh83Ayk1bt_Jq8hpH5hiuwYzmtXgqCbJXMgv99PPuiQW4t21hQ/exec
 ```
 
 ## Gold Fetch GAS
